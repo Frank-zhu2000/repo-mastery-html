@@ -9,7 +9,29 @@
 
 ---
 
-## 核心特性（完整复刻 WeKnora v5 10 大能力 · 零遗漏）
+## 效果演示
+
+> 以下均由本 Skill 对真实大型开源仓库（示例：`Tencent/WeKnora`）自动生成的单文件离线 HTML 实拍截图：
+
+### 1. 全景三蓝图：全链路数据流转图（图一） & 端到端业务流程泳道图（图三）
+![全景数据流转图](./docs/assets/01-overview-dataflow.png)
+
+![端到端业务流程泳道图](./docs/assets/02-overview-businessflow.png)
+
+### 2. 沿链路循序精读：左 100% 逐行中文精注源码 ↔ 右 痛点/类比/微流转图
+![逐行中文精注与痛点引导](./docs/assets/03-station-code-notes.png)
+
+### 3. 数据流转完整契约：进入数据结构 / 加工变化 / 传出数据结构 + 真实 JSON 样例
+![数据流转完整契约](./docs/assets/04-station-io-contract.png)
+
+### 4. 目录与模块流程图双向联动 + 浅色主题模式
+![模块流程图双向联动](./docs/assets/05-workbench-drilldown.png)
+
+![浅色主题模式](./docs/assets/06-light-theme.png)
+
+---
+
+## 核心特性（10 大内置能力 · 开箱即用）
 
 1. **🏛️ 视图 1 · 三大全景交互蓝图 + 循序渐进大纲**
    - **图一 · 全链路数据流转图**：`Stage × Flow` 网格，支持单主线聚焦高亮、通关绿灯同步、单点预览输入/输出、双击直达源码精读。
@@ -44,14 +66,15 @@
 ```text
 repo-mastery-html/
 ├── SKILL.md                                # 核心 Agent Skill 手册（7 阶段端到端流水线）
-├── README.md                               # 项目说明与安装使用文档
+├── README.md                               # 项目说明、效果演示与安装文档
 ├── LICENSE                                 # MIT 开源协议
+├── docs/assets/                            # README 实拍演示截图
 ├── scripts/
 │   ├── repo_mastery_cli.mjs                # 零依赖 5 命令 CLI（scan/prepare-notes/verify-notes/build/verify-html）
-│   └── render_template.mjs                 # 通用化 v5 单文件 HTML 渲染引擎（11+ 语言，自适应规模）
+│   └── render_template.mjs                 # 通用化单文件 HTML 渲染引擎（11+ 语言，自适应规模）
 ├── references/
 │   ├── schema_spec.md                      # curriculum.json 完整 Schema 与 SVG 防溢出字数规范
-│   ├── v5_parity_checklist.md              # v5 零遗漏 10 大支柱验收清单
+│   ├── v5_parity_checklist.md              # 零遗漏 10 大支柱验收清单
 │   └── annotator_prompt.md                 # 并行 code_annotator 子代理逐行中文注释规范
 └── examples/
     └── minimal_curriculum.example.json     # 最小可运行 Schema 参考示例

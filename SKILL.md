@@ -3,7 +3,7 @@ name: repo-mastery-html
 description: >-
   Generates a standalone, offline, interactive "Zero-to-Mastery" single-file HTML
   source-code learning system for any GitHub open-source repository (local directory
-  or GitHub URL). Faithfully replicates the full WeKnora v5 architecture: 3 interactive
+  or GitHub URL). Builds a complete 4-view interactive learning architecture: 3 interactive
   overview blueprints (Full-Chain Dataflow, Tech Architecture Boundaries, End-to-End
   Business Workflow Swimlanes), progressive station-by-station learning studio with
   "Why This Code Exists" pedagogy (pain point, beginner analogy, anti-rabbit-hole tip),
@@ -18,7 +18,7 @@ description: >-
 
 # Repo Mastery HTML — 开源项目 0 基础到精通交互式学习系统生成器
 
-将任意 GitHub 开源仓库（本地目录或 GitHub URL，任意编程语言与项目规模）转化为**单文件离线、可双向交互、全源码 100% 逐行中文精注**的「从 0 基础到精通」HTML 学习系统（完整复刻 WeKnora v5 全部 10 大核心模块，绝不遗漏）。
+将任意 GitHub 开源仓库（本地目录或 GitHub URL，任意编程语言与项目规模）转化为**单文件离线、可双向交互、全源码 100% 逐行中文精注**的「从 0 基础到精通」HTML 学习系统（完整覆盖 4 大视图、10 大核心学习模块，零遗漏）。
 
 ## Dependencies & Prerequisites
 - **Runtime**: Node.js `>= 20`（零外部 npm 依赖，使用内置 `fetch` 与 `WebSocket` 进行 Headless CDP 校验）。
