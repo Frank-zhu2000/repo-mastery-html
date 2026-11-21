@@ -1,0 +1,191 @@
+{
+  "meta": {
+    "projectName": "DemoService",
+    "logoChar": "学",
+    "version": "v1.0.0",
+    "commit": "abcdef123",
+    "storageKey": "repo_mastery_demoservice_v1",
+    "heroKicker": "🏛️ 融合三大全景蓝图：数据流 + 技术架构 + 业务泳道 · 6 站源码通关",
+    "heroTitle": "顺着真实架构与数据流，一站一站吃透 DemoService！",
+    "heroSubtitle": "先看三大全景图，再点击任意节点进入**「左逐行中文精注源码 ↔ 右 5-STEP 精读工坊」**！"
+  },
+  "stages": [
+    { "idx": 0, "label": "Stage 1 · 接入入口" },
+    { "idx": 1, "label": "Stage 2 · 核心处理" },
+    { "idx": 2, "label": "Stage 3 · 交付落库" }
+  ],
+  "flows": [
+    {
+      "id": "flow_online",
+      "badge": "主线一 · 推荐首学",
+      "name": "请求接入 → 流式交付（在线核心链路）",
+      "shortName": "💬 在线核心 (3站)",
+      "chipLabel": "💬 在线核心",
+      "filterLabel": "💬 请求→交付",
+      "color": "accent",
+      "summary": "从 HTTP 请求进入、工厂装配核心处理器，到结果交付给调用方。",
+      "stationIds": ["s1", "s2", "s3"]
+    }
+  ],
+  "dataFlow": {
+    "flows": [
+      { "from": "df_in", "to": "df_proc", "variant": "emphasis" },
+      { "from": "df_proc", "to": "df_out", "variant": "emphasis" }
+    ]
+  },
+  "techArch": {
+    "components": [
+      { "id": "api", "type": "frontend", "label": "接入网关", "sublabel": "HTTP · SSE", "tag": "入口层", "pos": [40, 60], "size": [184, 74] },
+      { "id": "core", "type": "backend", "label": "核心编排引擎", "sublabel": "Factory · Stream", "tag": "核心层", "pos": [320, 60], "size": [184, 74] },
+      { "id": "store", "type": "database", "label": "持久化存储", "sublabel": "PG · SQLite", "tag": "存储层", "pos": [600, 60], "size": [184, 74] }
+    ],
+    "boundaries": [
+      { "kind": "region", "label": "在线处理核心边界", "wraps": ["api", "core"] }
+    ],
+    "connections": [
+      { "id": "c1", "from": "api", "to": "core", "label": "路由转发", "variant": "emphasis" },
+      { "id": "c2", "from": "core", "to": "store", "label": "状态落库", "variant": "default" }
+    ],
+    "compToStation": {
+      "api": { "stationId": "s1", "role": "承接外部请求并校验上下文" },
+      "core": { "stationId": "s2", "role": "按配置装配具体流管理器实现" },
+      "store": { "stationId": "s3", "role": "结构化数据表与唯一索引落库" }
+    }
+  },
+  "businessFlow": {
+    "lanes": [
+      { "id": "lane_app", "label": "在线业务处理", "shortLabel": "在线业务" },
+      { "id": "lane_db", "label": "数据与持久化", "shortLabel": "持久化层", "variant": "exception" }
+    ],
+    "phases": [
+      { "id": "p1", "label": "接入与路由", "fromCol": 0, "toCol": 0 },
+      { "id": "p2", "label": "核心执行", "fromCol": 1, "toCol": 1, "variant": "emphasis" },
+      { "id": "p3", "label": "存储交付", "fromCol": 2, "toCol": 2, "variant": "dashed" }
+    ],
+    "groups": [
+      { "id": "g1", "label": "核心处理链", "lane": "lane_app", "fromCol": 0, "toCol": 1, "variant": "emphasis" }
+    ],
+    "mainPath": ["bn_in", "bn_core", "bn_store"],
+    "nodes": [
+      { "id": "bn_in", "lane": "lane_app", "col": 0, "type": "frontend", "label": "请求进入", "sublabel": "HTTP · Context", "tag": "入口", "sources": [{ "path": "src/main.go", "line": 1, "end_line": 20 }] },
+      { "id": "bn_core", "lane": "lane_app", "col": 1, "type": "backend", "label": "工厂装配流", "sublabel": "Redis / Memory", "tag": "工厂", "sources": [{ "path": "src/factory.go", "line": 11, "end_line": 40 }] },
+      { "id": "bn_store", "lane": "lane_db", "col": 2, "type": "database", "label": "凭据表落库", "sublabel": "UNIQUE 约束", "tag": "落库", "sources": [{ "path": "migrations/001.sql", "line": 1, "end_line": 20 }] }
+    ],
+    "edges": [
+      { "id": "be1", "from": "bn_in", "to": "bn_core", "label": "透传上下文", "variant": "emphasis" },
+      { "id": "be2", "from": "bn_core", "to": "bn_store", "label": "落库留痕", "variant": "default" }
+    ],
+    "nodeToLearn": {
+      "bn_in": { "stationId": "s1", "wbModuleId": "m_core", "tracks": ["main"], "role": "入口请求校验与路由分发" },
+      "bn_core": { "stationId": "s2", "wbModuleId": "m_core", "tracks": ["main"], "role": "动态工厂装配流式管理器" },
+      "bn_store": { "stationId": "s3", "wbModuleId": "m_core", "tracks": ["main"], "role": "数据库唯一约束与隔离持久化" }
+    },
+    "trackFilters": [
+      { "id": "all", "label": "全部业务流 (3 节点)" },
+      { "id": "main", "label": "⚡ 主干路径" }
+    ]
+  },
+  "stations": [
+    {
+      "id": "s1",
+      "codeLabel": "1-1",
+      "flowId": "flow_online",
+      "stage": 0,
+      "row": 0,
+      "dfNodeId": "df_in",
+      "dfLabel": "请求接入入口",
+      "dfSublabel": "HTTP · Header",
+      "dfTag": "入口",
+      "nodeType": "frontend",
+      "title": "请求接入：客户端如何把请求送入后端？",
+      "duration": "10 分钟",
+      "stars": 5,
+      "techCompIds": ["api"],
+      "wbTarget": { "moduleId": "m_core", "nodeId": "n1" },
+      "inputSpec": "外部 HTTP 请求（含鉴权 Header 与业务 JSON）",
+      "outputSpec": "已解析的上下文对象，准备交给核心工厂处理",
+      "analogy": "像机场安检入口：核验登机牌后分配通道。",
+      "whyBlock": {
+        "painPoint": "多端请求参数不统一且缺少追踪号，线上排查极难定位。",
+        "analogy": "就像**机场安检口**：统一核验登机牌、盖唯一追踪戳，再分流到对应登机口。",
+        "avoidRabbitHole": "先看主入口与核心路由，暂时跳过外围日志格式化代码。"
+      },
+      "ioContract": {
+        "inType": "HTTP POST /api/v1/chat",
+        "inFields": [{ "name": "query", "type": "string", "desc": "用户输入问题" }],
+        "inSample": "{\n  \"query\": \"hello world\"\n}",
+        "transformSteps": ["解析 JSON 请求体并注入 RequestID"],
+        "outType": "ChatContext",
+        "outFields": [{ "name": "request_id", "type": "string", "desc": "全链路追踪 ID" }],
+        "outSample": "{\n  \"request_id\": \"req_001\",\n  \"query\": \"hello world\"\n}"
+      },
+      "files": [{ "id": "f1", "label": "factory.go", "path": "internal/stream/factory.go", "syntax": "go", "sliceStart": 11, "sliceEnd": 40 }],
+      "steps": [
+        { "id": "s1_1", "order": 1, "label": "配置解析", "sublabel": "读取类型参数", "tag": "初始化", "type": "frontend", "edgeLabel": "路由", "fileId": "f1", "startLine": 11, "endLine": 25, "explain": "读取配置决定底层流管理实现。", "pitfall": "缺少默认值时容易空指针。" },
+        { "id": "s1_2", "order": 2, "label": "实例装配", "sublabel": "Redis/内存切换", "tag": "工厂", "type": "backend", "edgeLabel": "", "fileId": "f1", "startLine": 26, "endLine": 40, "explain": "按类型返回对应 StreamManager 接口实现。", "pitfall": "多副本部署切勿误用内存版导致续流失效。" }
+      ],
+      "quiz": {
+        "question": "为什么要抽象 StreamManager 工厂？",
+        "options": ["增加文件数量", "让集群 Redis 与单机内存无缝切换", "减少 HTTP Header", "替代数据库"],
+        "correctIndex": 1,
+        "explanation": "依赖接口抽象后，标准集群版与 Lite 单进程版可复用同一套上层业务代码。"
+      },
+      "interviewQ": "集群版与单机版如何共用一套流式代码？",
+      "interviewA": "通过统一接口 + 工厂方法在启动期按配置注入 Redis 或 Memory 实现，上层业务零感知。"
+    }
+  ],
+  "workbenchModules": [
+    {
+      "id": "dir_tree",
+      "kind": "tree",
+      "pinnedTab": true,
+      "shortTitle": "0. 全景目录",
+      "title": "项目目录树 ↔ 模块全景图",
+      "subtitle": "点击目录行或模块卡片双向联动",
+      "stationId": "s1",
+      "viewBox": [860, 220],
+      "files": [
+        {
+          "id": "tree_root",
+          "label": "项目目录树",
+          "path": "demo/",
+          "syntax": "tree",
+          "virtualLines": [
+            "demo/                       # 📦 示例项目根目录",
+            "├── internal/stream/        # 🌊 流式管理模块",
+            "│   └── factory.go          # 流管理器工厂入口"
+          ]
+        }
+      ],
+      "nodes": [
+        { "id": "dir_core", "stepOrder": 1, "label": "核心流管理", "sublabel": "internal/stream/", "tag": "核心", "type": "backend", "x": 34, "y": 44, "w": 228, "h": 86, "fileId": "tree_root", "startLine": 1, "endLine": 3, "summary": "流式工厂与管理", "deepDive": "负责流式管理器装配。", "pitfall": "多副本需启用 Redis。", "interviewQ": "如何解耦存储？", "interviewA": "接口抽象。", "jumpTo": { "moduleId": "m_core", "nodeId": "n1", "label": "进入核心流程图" } }
+      ],
+      "edges": []
+    },
+    {
+      "id": "m_core",
+      "shortTitle": "① 核心流管理",
+      "overviewOrder": 1,
+      "overviewBadge": "① 核心流管理",
+      "parentOverviewNodeId": "dir_core",
+      "stationId": "s1",
+      "title": "核心流管理装配流程",
+      "subtitle": "点击节点定位真实源码",
+      "viewBox": [860, 220],
+      "files": [{ "id": "f_fac", "label": "factory.go", "path": "internal/stream/factory.go", "syntax": "go", "sliceStart": 11, "sliceEnd": 40 }],
+      "nodes": [
+        { "id": "n1", "stepOrder": 1, "label": "工厂装配", "sublabel": "factory.go", "tag": "工厂", "type": "backend", "x": 34, "y": 44, "w": 228, "h": 86, "fileId": "f_fac", "startLine": 11, "endLine": 40, "summary": "装配 StreamManager", "deepDive": "按配置装配具体实现。", "pitfall": "注意默认分支兜底。", "interviewQ": "为何用工厂模式？", "interviewA": "隔离部署形态差异。" }
+      ],
+      "edges": []
+    }
+  ],
+  "pitch": [
+    { "step": "01", "title": "开场定调", "time": "0:00-0:30", "goal": "亮定位与架构亮点", "script": "本项目采用清晰分层架构与接口工厂解耦，兼顾单机轻量与集群扩展。" }
+  ],
+  "skipGuide": [
+    { "module": "外围脚手架", "skip": "CLI 彩蛋与日志格式化细节", "keep": "紧盯核心接口抽象（主线一第 1-1 站）" }
+  ],
+  "exam": [
+    { "id": "ex1", "q": "为何使用 StreamManager 工厂抽象？", "a": "隔离集群 Redis 与单机内存差异。", "stationId": "s1" }
+  ]
+}

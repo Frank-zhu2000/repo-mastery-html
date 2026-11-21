@@ -1,0 +1,8 @@
+.DS_Store
+Thumbs.db
+*.log
+node_modules/
+.cdp_profile_*/
+screenshots/
+work/
+out/
