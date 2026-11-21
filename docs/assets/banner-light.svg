@@ -1,0 +1,135 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 310" width="1200" height="310" role="img" aria-label="repo-mastery-html hero banner light">
+  <defs>
+    <linearGradient id="bg-light" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f8fbff"/>
+      <stop offset="55%" stop-color="#f0f6ff"/>
+      <stop offset="100%" stop-color="#eef2ff"/>
+    </linearGradient>
+    <radialGradient id="glow-cyan-l" cx="0.16" cy="0.2" r="0.52">
+      <stop offset="0%" stop-color="#0ea5e9" stop-opacity="0.12"/>
+      <stop offset="100%" stop-color="#0ea5e9" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glow-indigo-l" cx="0.86" cy="0.72" r="0.52">
+      <stop offset="0%" stop-color="#6366f1" stop-opacity="0.13"/>
+      <stop offset="100%" stop-color="#6366f1" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="accent-grad-l" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#0284c7"/>
+      <stop offset="55%" stop-color="#4f46e5"/>
+      <stop offset="100%" stop-color="#059669"/>
+    </linearGradient>
+    <linearGradient id="logo-grad-l" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0284c7"/>
+      <stop offset="100%" stop-color="#4f46e5"/>
+    </linearGradient>
+    <pattern id="dot-grid-light" width="24" height="24" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1" fill="#0f172a" fill-opacity="0.08"/>
+    </pattern>
+  </defs>
+
+  <!-- Base Canvas -->
+  <rect width="1200" height="310" rx="18" fill="url(#bg-light)"/>
+  <rect width="1200" height="310" rx="18" fill="url(#dot-grid-light)"/>
+  <rect width="1200" height="310" rx="18" fill="url(#glow-cyan-l)"/>
+  <rect width="1200" height="310" rx="18" fill="url(#glow-indigo-l)"/>
+  <rect x="1" y="1" width="1198" height="308" rx="17" fill="none" stroke="#cbd8ec" stroke-width="1.5"/>
+
+  <!-- Left Brand Block -->
+  <g transform="translate(56, 48)">
+    <!-- Square Logo -->
+    <rect x="0" y="0" width="52" height="52" rx="14" fill="url(#logo-grad-l)"/>
+    <text x="26" y="34" text-anchor="middle" fill="#ffffff" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="24" font-weight="800">链</text>
+
+    <!-- Kicker Pill -->
+    <rect x="68" y="11" width="234" height="30" rx="15" fill="#0284c7" fill-opacity="0.10" stroke="#0284c7" stroke-opacity="0.38" stroke-width="1"/>
+    <text x="185" y="30.5" text-anchor="middle" fill="#0369a1" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="12.5" font-weight="700">AGENT SKILL · ZERO DEPS</text>
+
+    <!-- Main Title -->
+    <text x="0" y="108" fill="#0f172a" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="44" font-weight="800" letter-spacing="-0.8">repo-mastery-html</text>
+    <rect x="0" y="122" width="180" height="4" rx="2" fill="url(#accent-grad-l)"/>
+
+    <!-- Subtitle -->
+    <text x="0" y="156" fill="#1e293b" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="17" font-weight="600">任意 GitHub 开源仓库 → 0 基础到精通 · 单文件离线交互式源码学习系统</text>
+    <text x="0" y="182" fill="#475569" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="13.5">Turn any GitHub repo into an interactive 4-view HTML workbench.</text>
+
+    <!-- 4 Feature Pills -->
+    <g transform="translate(0, 202)" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif" font-size="12" font-weight="700">
+      <rect x="0" y="0" width="130" height="28" rx="14" fill="#e0f2fe" stroke="#0284c7" stroke-opacity="0.45"/>
+      <text x="65" y="18.5" text-anchor="middle" fill="#075985">三大交互蓝图</text>
+
+      <rect x="142" y="0" width="154" height="28" rx="14" fill="#ecfdf5" stroke="#059669" stroke-opacity="0.45"/>
+      <text x="219" y="18.5" text-anchor="middle" fill="#065f46">100% 逐行中文精注</text>
+
+      <rect x="308" y="0" width="142" height="28" rx="14" fill="#f5f3ff" stroke="#7c3aed" stroke-opacity="0.45"/>
+      <text x="379" y="18.5" text-anchor="middle" fill="#5b21b6">真实 I/O 数据契约</text>
+
+      <rect x="462" y="0" width="136" height="28" rx="14" fill="#fffbeb" stroke="#d97706" stroke-opacity="0.45"/>
+      <text x="530" y="18.5" text-anchor="middle" fill="#92400e">CDP 零溢出校验</text>
+    </g>
+  </g>
+
+  <!-- Right Stylized Interactive Workbench Motif -->
+  <g transform="translate(742, 34)">
+    <!-- Window Frame -->
+    <rect x="0" y="0" width="406" height="242" rx="14" fill="#ffffff" stroke="#cbd8ec" stroke-width="1.4"/>
+    <!-- Window Header -->
+    <rect x="0" y="0" width="406" height="32" rx="14" fill="#f1f5f9"/>
+    <rect x="0" y="18" width="406" height="14" fill="#f1f5f9"/>
+    <line x1="0" y1="32" x2="406" y2="32" stroke="#dce4f0" stroke-width="1"/>
+    <circle cx="18" cy="16" r="4.5" fill="#f43f5e" fill-opacity="0.85"/>
+    <circle cx="33" cy="16" r="4.5" fill="#f59e0b" fill-opacity="0.85"/>
+    <circle cx="48" cy="16" r="4.5" fill="#10b981" fill-opacity="0.85"/>
+    <text x="208" y="20" text-anchor="middle" fill="#64748b" font-family="ui-monospace, Consolas, monospace" font-size="10.5">project-mastery-v1.html (Offline)</text>
+
+    <!-- Left Mini Code Pane with Chinese Annotations -->
+    <rect x="14" y="44" width="182" height="184" rx="8" fill="#f8fafc" stroke="#dce4f0"/>
+    <text x="24" y="64" fill="#7c3aed" font-family="ui-monospace, Consolas, monospace" font-size="10.5" font-weight="600">func <tspan fill="#1d4ed8">HandleFlow</tspan>(ctx)</text>
+    <text x="24" y="79" fill="#047857" font-family="-apple-system, 'PingFang SC', sans-serif" font-size="9.5">↳ 入口编排函数：串联全链路</text>
+    <rect x="18" y="88" width="174" height="36" rx="5" fill="#0284c7" fill-opacity="0.10"/>
+    <rect x="18" y="88" width="3" height="36" rx="1.5" fill="#0284c7"/>
+    <text x="27" y="103" fill="#0f172a" font-family="ui-monospace, Consolas, monospace" font-size="10.5">scope := <tspan fill="#0369a1">Resolve</tspan>(req)</text>
+    <text x="27" y="117" fill="#047857" font-family="-apple-system, 'PingFang SC', sans-serif" font-size="9.5">↳ 服务端收敛权限与检索范围</text>
+    <text x="24" y="142" fill="#0f172a" font-family="ui-monospace, Consolas, monospace" font-size="10.5">res := <tspan fill="#1d4ed8">FuseRRF</tspan>(v, kw)</text>
+    <text x="24" y="157" fill="#047857" font-family="-apple-system, 'PingFang SC', sans-serif" font-size="9.5">↳ 双路归一化加权 RRF 融合</text>
+    <text x="24" y="180" fill="#0f172a" font-family="ui-monospace, Consolas, monospace" font-size="10.5"><tspan fill="#7c3aed">return</tspan> <tspan fill="#b45309">StreamSSE</tspan>(res)</text>
+    <text x="24" y="195" fill="#047857" font-family="-apple-system, 'PingFang SC', sans-serif" font-size="9.5">↳ 持久化事件流并支持断线续传</text>
+    <text x="24" y="216" fill="#64748b" font-family="ui-monospace, Consolas, monospace" font-size="10">}</text>
+    <text x="36" y="216" fill="#047857" fill-opacity="0.85" font-family="-apple-system, 'PingFang SC', sans-serif" font-size="9">↳ 结束 HandleFlow</text>
+
+    <!-- Bidirectional Sync Connector -->
+    <path d="M 196 106 L 214 106" stroke="#0284c7" stroke-width="2" stroke-dasharray="3 2"/>
+    <circle cx="205" cy="106" r="3" fill="#0284c7"/>
+
+    <!-- Right Mini Interactive Flow Cards -->
+    <g transform="translate(214, 44)">
+      <!-- Node 1 -->
+      <rect x="0" y="0" width="178" height="48" rx="8" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.5"/>
+      <circle cx="16" cy="18" r="7.5" fill="#0284c7"/>
+      <text x="16" y="21.5" text-anchor="middle" fill="#ffffff" font-family="sans-serif" font-size="9.5" font-weight="800">1</text>
+      <text x="30" y="22" fill="#075985" font-family="-apple-system, 'PingFang SC', sans-serif" font-size="11.5" font-weight="700">入口与权限收敛</text>
+      <text x="12" y="38" fill="#0369a1" font-family="ui-monospace, Consolas, monospace" font-size="9">↔ router.go · L174</text>
+
+      <!-- Arrow 1->2 -->
+      <path d="M 89 48 L 89 64" stroke="#0284c7" stroke-width="1.8"/>
+      <polygon points="85,61 93,61 89,67" fill="#0284c7"/>
+
+      <!-- Node 2 (Active) -->
+      <rect x="0" y="68" width="178" height="48" rx="8" fill="#eff6ff" stroke="#4f46e5" stroke-width="2"/>
+      <circle cx="16" cy="86" r="7.5" fill="#4f46e5"/>
+      <text x="16" y="89.5" text-anchor="middle" fill="#ffffff" font-family="sans-serif" font-size="9.5" font-weight="800">2</text>
+      <text x="30" y="90" fill="#1e40af" font-family="-apple-system, 'PingFang SC', sans-serif" font-size="11.5" font-weight="700">核心算法与数据契约</text>
+      <text x="12" y="106" fill="#4338ca" font-family="ui-monospace, Consolas, monospace" font-size="9">Input → Transform → Output</text>
+
+      <!-- Arrow 2->3 -->
+      <path d="M 89 116 L 89 132" stroke="#059669" stroke-width="1.8"/>
+      <polygon points="85,129 93,129 89,135" fill="#059669"/>
+
+      <!-- Node 3 -->
+      <rect x="0" y="136" width="178" height="48" rx="8" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+      <circle cx="16" cy="154" r="7.5" fill="#059669"/>
+      <text x="16" y="157.5" text-anchor="middle" fill="#ffffff" font-family="sans-serif" font-size="9.5" font-weight="800">✓</text>
+      <text x="30" y="158" fill="#065f46" font-family="-apple-system, 'PingFang SC', sans-serif" font-size="11.5" font-weight="700">流式交付与自测通关</text>
+      <text x="12" y="174" fill="#047857" font-family="ui-monospace, Consolas, monospace" font-size="9">Quiz + 30s Interview</text>
+    </g>
+  </g>
+</svg>
