@@ -5,9 +5,9 @@
     "version": "v1.0.0",
     "commit": "abcdef123",
     "storageKey": "repo_mastery_demoservice_v1",
-    "heroKicker": "🏛️ 融合三大全景蓝图：数据流 + 技术架构 + 业务泳道 · 6 站源码通关",
+    "heroKicker": "🏛️ 融合三大全景蓝图：数据流 + 技术架构 + 业务泳道 · 9 节点模块百科 + 3 站源码通关",
     "heroTitle": "顺着真实架构与数据流，一站一站吃透 DemoService！",
-    "heroSubtitle": "先看三大全景图，再点击任意节点进入**「左逐行中文精注源码 ↔ 右 5-STEP 精读工坊」**！"
+    "heroSubtitle": "先在下方三张全景图上**单击任意节点**展开图下/全屏 6 维导读档案，再点击按钮或双击节点进入**「左逐行中文精注源码 ↔ 右 5-STEP 精读工坊」**！"
   },
   "stages": [
     { "idx": 0, "label": "Stage 1 · 接入入口" },
@@ -23,21 +23,48 @@
       "chipLabel": "💬 在线核心",
       "filterLabel": "💬 请求→交付",
       "color": "accent",
-      "summary": "从 HTTP 请求进入、工厂装配核心处理器，到结果交付给调用方。",
+      "summary": "从 HTTP 请求鉴权进入、工厂装配流管理器，到状态与唯一约束落库。",
       "stationIds": ["s1", "s2", "s3"]
     }
   ],
   "dataFlow": {
     "flows": [
-      { "from": "df_in", "to": "df_proc", "variant": "emphasis" },
-      { "from": "df_proc", "to": "df_out", "variant": "emphasis" }
+      { "id": "df_1", "from": "df_in", "to": "df_proc", "label": "已鉴权上下文", "variant": "emphasis" },
+      { "id": "df_2", "from": "df_proc", "to": "df_out", "label": "流事件与快照", "variant": "emphasis" }
     ]
   },
   "techArch": {
     "components": [
-      { "id": "api", "type": "frontend", "label": "接入网关", "sublabel": "HTTP · SSE", "tag": "入口层", "pos": [40, 60], "size": [184, 74] },
-      { "id": "core", "type": "backend", "label": "核心编排引擎", "sublabel": "Factory · Stream", "tag": "核心层", "pos": [320, 60], "size": [184, 74] },
-      { "id": "store", "type": "database", "label": "持久化存储", "sublabel": "PG · SQLite", "tag": "存储层", "pos": [600, 60], "size": [184, 74] }
+      {
+        "id": "api",
+        "type": "frontend",
+        "label": "接入网关",
+        "sublabel": "HTTP · SSE",
+        "tag": "入口层",
+        "pos": [40, 60],
+        "size": [184, 74],
+        "sources": [{ "path": "src/gateway.go", "line": 1, "end_line": 20, "label": "接入网关" }]
+      },
+      {
+        "id": "core",
+        "type": "backend",
+        "label": "核心编排引擎",
+        "sublabel": "Factory · Stream",
+        "tag": "核心层",
+        "pos": [320, 60],
+        "size": [184, 74],
+        "sources": [{ "path": "src/factory.go", "line": 1, "end_line": 25, "label": "流管理器工厂" }]
+      },
+      {
+        "id": "store",
+        "type": "database",
+        "label": "持久化存储",
+        "sublabel": "PG · SQLite",
+        "tag": "存储层",
+        "pos": [600, 60],
+        "size": [184, 74],
+        "sources": [{ "path": "migrations/001.sql", "line": 1, "end_line": 18, "label": "凭据与状态建表" }]
+      }
     ],
     "boundaries": [
       { "kind": "region", "label": "在线处理核心边界", "wraps": ["api", "core"] }
@@ -67,9 +94,9 @@
     ],
     "mainPath": ["bn_in", "bn_core", "bn_store"],
     "nodes": [
-      { "id": "bn_in", "lane": "lane_app", "col": 0, "type": "frontend", "label": "请求进入", "sublabel": "HTTP · Context", "tag": "入口", "sources": [{ "path": "src/main.go", "line": 1, "end_line": 20 }] },
-      { "id": "bn_core", "lane": "lane_app", "col": 1, "type": "backend", "label": "工厂装配流", "sublabel": "Redis / Memory", "tag": "工厂", "sources": [{ "path": "src/factory.go", "line": 11, "end_line": 40 }] },
-      { "id": "bn_store", "lane": "lane_db", "col": 2, "type": "database", "label": "凭据表落库", "sublabel": "UNIQUE 约束", "tag": "落库", "sources": [{ "path": "migrations/001.sql", "line": 1, "end_line": 20 }] }
+      { "id": "bn_in", "lane": "lane_app", "col": 0, "type": "frontend", "label": "请求进入", "sublabel": "HTTP · Context", "tag": "入口", "sources": [{ "path": "src/gateway.go", "line": 1, "end_line": 20 }] },
+      { "id": "bn_core", "lane": "lane_app", "col": 1, "type": "backend", "label": "工厂装配流", "sublabel": "Redis / Memory", "tag": "工厂", "sources": [{ "path": "src/factory.go", "line": 1, "end_line": 25 }] },
+      { "id": "bn_store", "lane": "lane_db", "col": 2, "type": "database", "label": "凭据表落库", "sublabel": "UNIQUE 约束", "tag": "落库", "sources": [{ "path": "migrations/001.sql", "line": 1, "end_line": 18 }] }
     ],
     "edges": [
       { "id": "be1", "from": "bn_in", "to": "bn_core", "label": "透传上下文", "variant": "emphasis" },
@@ -84,6 +111,599 @@
       { "id": "all", "label": "全部业务流 (3 节点)" },
       { "id": "main", "label": "⚡ 主干路径" }
     ]
+  },
+  "overviewDossiers": {
+    "dataflow": {
+      "s1": {
+        "role": "【数据流 1-1 站】将外部原始 HTTP JSON 请求体与租户请求头，规范化解析并封装为携带全链路 `request_id` 与超时取消信号的 `ChatContext`。",
+        "whyNeed": "原始 HTTP 报文结构松散且缺少租户边界校验与统一追踪 ID。若不先收敛为强类型内部上下文，下游工厂和存储层将直接面对空指针、缺字段和链路日志断档。",
+        "problemsSolved": [
+          "消除 **请求头缺失与并发串台**：入口强制校验 `X-Tenant-ID` 并注入单调唯一的 `request_id`。",
+          "阻断 **恶意超大载荷穿透下游**：在反序列化前限制 Body 体积并提前校验必填 `query`。"
+        ],
+        "principles": [
+          {
+            "title": "前置租户头校验与上下文封装",
+            "detail": "读取 `X-Tenant-ID` 失败时直接返回 `400 Bad Request`，合法请求写入标准 `ChatContext`。",
+            "anchor": "src/gateway.go:L1-L10"
+          },
+          {
+            "title": "JSON 白名单反序列化",
+            "detail": "仅解析声明的 `query` 与 `stream` 字段，忽略外部客户端多传的内部保留属性。",
+            "anchor": "src/gateway.go:L11-L16"
+          },
+          {
+            "title": "请求追踪 ID 注入与分发",
+            "detail": "未传 `X-Request-ID` 时服务端兜底生成 UUID，随后统一投递给流管理器工厂。",
+            "anchor": "src/gateway.go:L17-L20"
+          }
+        ],
+        "failureScenarios": [
+          {
+            "severity": "P0",
+            "trigger": "网关误删 `X-Tenant-ID` 必填校验或放行空 `query` 请求",
+            "prodImpact": "空租户请求穿透进数据库触发跨空间脏写，或无意义消耗下游模型与流式队列资源。",
+            "fallbackOrCheck": "核查 `src/gateway.go:L5-L12` 前置参数校验分支及网关 `400` 拦截日志。"
+          },
+          {
+            "severity": "P1",
+            "trigger": "未保留客户端透传的 `X-Request-ID` 而是每次强行覆盖",
+            "prodImpact": "前端首字耗时（TTFB）与服务端链路日志无法对账，线上慢查询排障效率下降。",
+            "fallbackOrCheck": "检查 `src/gateway.go:L17-L20` 中 `Header.Get(\"X-Request-ID\")` 优先级逻辑。"
+          }
+        ],
+        "io": {
+          "inSummary": "客户端发来的原始 `HTTP POST /api/v1/chat` 请求与头部",
+          "inFields": [
+            { "name": "X-Tenant-ID", "type": "HTTP Header", "desc": "当前请求所属租户空间标识" },
+            { "name": "query", "type": "JSON string", "desc": "用户输入的自然语言提问正文" }
+          ],
+          "transform": "校验租户与必填参数、生成或透传 `request_id`，序列化为不可变强类型 `ChatContext`。",
+          "outSummary": "规范化的内部 `ChatContext` 结构体，交付第 1-2 站工厂调度",
+          "outFields": [
+            { "name": "TenantID", "type": "string", "desc": "经入口校验的可信空间标识" },
+            { "name": "RequestID", "type": "string", "desc": "贯穿全链路的唯一追踪号" }
+          ]
+        },
+        "examPoints": ["HTTP 参数白名单校验", "X-Request-ID 全链路对账", "入口体积限流防穿透"],
+        "interviewQuestions": [
+          {
+            "q": "为什么必须在数据流第一站就把原始 HTTP Request 转成内部 `ChatContext`，而不直接把 `*http.Request` 传给下游业务层？",
+            "focus": "考察分层解耦与契约收敛意识",
+            "a": "直接透传 HTTP 对象会把传输协议与业务逻辑强耦合：下游不仅无法在 MQ/gRPC 等非 HTTP 入口复用，还容易遗漏租户与必填字段校验。入口站完成协议剥离与强类型收敛后，下游只需面向稳定的 `ChatContext` 编程。"
+          },
+          {
+            "q": "前端已经生成了 `X-Request-ID`，为什么后端网关还要做一次兜底生成检查？",
+            "focus": "考察全链路可观测性的边界容错",
+            "a": "内部脚本、第三方 Webhook 或 CLI 调用可能未按约定附带 `X-Request-ID`。后端采取“有则复用对账、无则兜底生成”策略，保证每一条请求在下游日志与流式事件中都有据可查。"
+          }
+        ]
+      },
+      "s2": {
+        "role": "【数据流 1-2 站】接收标准 `ChatContext`，依据部署环境变量在 `RedisStreamManager` 与 `MemoryStreamManager` 间动态装配具体流引擎，输出可写入的流会话句柄。",
+        "whyNeed": "如果把 Redis Stream 操作直接硬编码在请求链路中，本地开发和单机版部署会因强依赖外部 Redis 无法启动；反之若用内存 Map 硬编码，多副本集群下的断线续流会彻底失效。",
+        "problemsSolved": [
+          "解除 **单机轻量与多副本集群代码的双份维护**：通过工厂屏蔽底层存储驱动差异。",
+          "防止 **未知配置值引发运行时空指针**：`default` 分支默认回落安全的单机内存管理器。"
+        ],
+        "principles": [
+          {
+            "title": "统一 StreamManager 接口抽象",
+            "detail": "定义只暴露 `Publish` 与 `Resume` 语义的最小接口，隔离底层 Redis 与内存队列细节。",
+            "anchor": "src/factory.go:L1-L8"
+          },
+          {
+            "title": "配置驱动工厂分派",
+            "detail": "读取 `STREAM_MANAGER_TYPE` 并标准化小写比较，分发至 Redis 或 Memory 实现。",
+            "anchor": "src/factory.go:L9-L18"
+          },
+          {
+            "title": "安全默认兜底策略",
+            "detail": "未显式配置或配置拼写异常时记录告警并回退 `MemoryStreamManager`，避免空接口 panic。",
+            "anchor": "src/factory.go:L19-L25"
+          }
+        ],
+        "failureScenarios": [
+          {
+            "severity": "P0",
+            "trigger": "多副本 K8s 生产环境误设 `STREAM_MANAGER_TYPE=memory`",
+            "prodImpact": "用户断线重连请求一旦被负载均衡打到其他 Pod，立刻找不到流缓存导致流式回答半路截断。",
+            "fallbackOrCheck": "检查部署环境变量与启动日志中 `NewStreamManager` 打印的生效驱动类型。"
+          },
+          {
+            "severity": "P1",
+            "trigger": "配置为 `redis` 但未注入有效 Redis 客户端连接",
+            "prodImpact": "工厂初始化报错或回退失败，所有流式会话写入受阻，需降级为单机模式或恢复 Redis。",
+            "fallbackOrCheck": "排查 `src/factory.go:L12-L16` Redis 客户端空值检查及健康探针。"
+          }
+        ],
+        "io": {
+          "inSummary": "已校验的 `ChatContext` 与启动期流配置 `StreamConfig`",
+          "inFields": [
+            { "name": "ChatContext", "type": "struct", "desc": "含 `TenantID` 与 `RequestID` 的标准化会话上下文" },
+            { "name": "DriverType", "type": "string", "desc": "`redis` 或 `memory` 模式开关" }
+          ],
+          "transform": "按配置装配对应流管理器实例，并初始化带会话前缀的增量事件写入通道。",
+          "outSummary": "绑定具体驱动的 `StreamHandle` 句柄与增量事件流对象",
+          "outFields": [
+            { "name": "Manager", "type": "StreamManager", "desc": "已完成驱动绑定的流管理器接口实例" },
+            { "name": "StreamKey", "type": "string", "desc": "按租户与请求 ID 拼接的持久化流主键" }
+          ]
+        },
+        "examPoints": ["工厂模式解耦部署形态", "多副本 Memory 模式陷阱", "Default 分支防空指针"],
+        "interviewQuestions": [
+          {
+            "q": "多副本集群与单机轻量版如何共用同一套流式对话主流程而不改业务代码？",
+            "focus": "考察依赖倒置（DIP）与工厂模式实战",
+            "a": "业务编排层只依赖统一的 `StreamManager` 接口，启动期由 `NewStreamManager` 工厂根据环境变量注入 `RedisStreamManager` 或 `MemoryStreamManager`，实现上层逻辑零改动。"
+          },
+          {
+            "q": "为什么 `NewStreamManager` 遇到无法识别的配置字符串时，不能直接返回 `nil`？",
+            "focus": "考察防御式编程与启动期 Fail-Safe",
+            "a": "返回 `nil` 会把错误延迟到用户发提问时才触发 nil pointer panic，造成大面积 500。要么在启动期显式报错阻断带病上线，要么在受控范围内兜底回落安全实现并打印醒目告警。"
+          }
+        ]
+      },
+      "s3": {
+        "role": "【数据流 1-3 站】把流式处理产出的会话状态与用户凭据元数据，写入带租户联合唯一索引的关系表，确保并发重试与跨空间数据零污染。",
+        "whyNeed": "流式缓存只适合短期续播，核心会话状态与敏感凭据记录必须依靠关系型数据库的事务与 UNIQUE 约束兜底，防止多端并发写产生重复脏记录或越权读写。",
+        "problemsSolved": [
+          "杜绝 **并发重放生成重复记录**：数据库侧 `(tenant_id, name)` 联合唯一索引提供最终幂等保护。",
+          "筑牢 **租户级数据硬隔离**：每条记录均显式携带 `tenant_id` 并配合索引约束检索范围。"
+        ],
+        "principles": [
+          {
+            "title": "租户联合唯一索引防重",
+            "detail": "在表结构层面强制声明 `UNIQUE(tenant_id, item_name)`，并发重复插入由 DB 引擎拦截。",
+            "anchor": "migrations/001.sql:L1-L9"
+          },
+          {
+            "title": "显式时间戳与状态字段建模",
+            "detail": "通过 `status` 与 `updated_at` 追踪任务最终态，支撑下游审计与清理。",
+            "anchor": "migrations/001.sql:L10-L14"
+          },
+          {
+            "title": "租户查询索引加速",
+            "detail": "为高频列表查询建立 `(tenant_id, created_at DESC)` 复合索引避免全表扫。",
+            "anchor": "migrations/001.sql:L15-L18"
+          }
+        ],
+        "failureScenarios": [
+          {
+            "severity": "P0",
+            "trigger": "建表迁移脚本漏掉 `tenant_id` 列或误建全局唯一索引 `UNIQUE(item_name)`",
+            "prodImpact": "轻则不同租户命名冲突互相报错无法创建，重则查询漏带租户条件造成跨租户数据泄露。",
+            "fallbackOrCheck": "核查 `migrations/001.sql:L6-L13` 约束定义及所有 Repository SQL 的 `WHERE tenant_id = ?` 条件。"
+          },
+          {
+            "severity": "P1",
+            "trigger": "高并发写入时业务层未处理 DB 唯一键冲突错误码 `23505`",
+            "prodImpact": "幂等重试请求本应平滑返回已存在记录，却直接抛 500 Internal Server Error 给前端。",
+            "fallbackOrCheck": "检查仓储层写入是否捕获唯一冲突错误并转为幂等更新或友好 409 提示。"
+          }
+        ],
+        "io": {
+          "inSummary": "来自上游流引擎的状态快照与待落库结构化记录",
+          "inFields": [
+            { "name": "tenant_id", "type": "VARCHAR(64)", "desc": "所属租户主键，参与所有索引前缀" },
+            { "name": "item_name", "type": "VARCHAR(128)", "desc": "同租户内唯一的资源名称" }
+          ],
+          "transform": "在事务内执行 `INSERT ... ON CONFLICT DO UPDATE`，借助唯一索引完成并发幂等落库。",
+          "outSummary": "持久化成功的数据库行记录及受影响行数回执",
+          "outFields": [
+            { "name": "id", "type": "BIGINT", "desc": "数据库生成的稳定主键值" },
+            { "name": "status", "type": "VARCHAR(32)", "desc": "最终落库状态（`active` / `completed`）" }
+          ]
+        },
+        "examPoints": ["联合唯一索引防并发脏写", "租户前缀索引隔离", "冲突错误码幂等转换"],
+        "interviewQuestions": [
+          {
+            "q": "业务代码里已经做过“先查是否存在、不存在再插入”的判重了，为什么 SQL 迁移文件里还必须加 `UNIQUE(tenant_id, item_name)`？",
+            "focus": "考察并发竞态（TOCTOU）与数据库最终一致性保障",
+            "a": "并发请求同时到达时，“先查后插”存在时间窗口（两个协程都查到不存在），必然发生双写重复。只有数据库引擎层的 `UNIQUE` 约束具备原子排他性，是高并发幂等的最后一道可靠防线。"
+          },
+          {
+            "q": "为什么多租户表上建立复合索引时，几乎总是把 `tenant_id` 放在最左侧第一列？",
+            "focus": "考察 B+Tree 最左前缀原则与 SaaS 查询性能",
+            "a": "因为线上几乎所有业务查询都会先按 `tenant_id` 过滤。把 `tenant_id` 放最左侧不仅能利用最左前缀精确缩小扫描范围到单租户，还能同时支撑 `(tenant_id, item_name)` 唯一校验和租户列表分页排序。"
+          }
+        ]
+      }
+    },
+    "techarch": {
+      "api": {
+        "role": "【技术组件 · 接入网关】位于在线请求最外沿的 HTTP/SSE 边界层，负责协议终端兼容、跨域/鉴权头提取与背压限流保护，防止异常流量直接冲击核心编排引擎。",
+        "whyNeed": "前端与外部集成方直接暴露在公网或不可信内网，面临弱网断连、恶意突发请求和异构协议报文。独立的接入网关将传输层关注点与业务计算层隔离，便于独立横向扩容与限流熔断。",
+        "problemsSolved": [
+          "隔离 **慢客户端对核心协程的拖垮**：在网关层设置读写超时与连接数限制，释放核心服务内存。",
+          "统一 **全站错误码与CORS/安全头策略**：避免安全策略散落各业务 Handler 造成配置漂移。"
+        ],
+        "principles": [
+          {
+            "title": "非阻塞请求上下文透传",
+            "detail": "把 HTTP 连接生命周期转化为 `context.Context` 取消信号，客户端断开即停止下游计算。",
+            "anchor": "src/gateway.go:L1-L10"
+          },
+          {
+            "title": "标准化入口校验管道",
+            "detail": "在进入核心路由前集中完成请求头提取、大小截断与结构合法性预检。",
+            "anchor": "src/gateway.go:L11-L16"
+          },
+          {
+            "title": "SSE 长连接响应头管控",
+            "detail": "显式关闭反向代理缓冲并声明 `text/event-stream`，确保流式首字实时下发。",
+            "anchor": "src/gateway.go:L17-L20"
+          }
+        ],
+        "failureScenarios": [
+          {
+            "severity": "P0",
+            "trigger": "网关层自身 Goroutine 泄漏或上游反代超时配置错误",
+            "prodImpact": "爆炸半径覆盖全部在线接口（返回 502/504），但独立部署的数据库持久化与后台离线任务不受波及。",
+            "fallbackOrCheck": "检查网关连接数指标、反代 `proxy_buffering off` 配置与进程 CPU/Goroutine 栈。"
+          },
+          {
+            "severity": "P1",
+            "trigger": "错误拦截或限流阈值配置过严",
+            "prodImpact": "合法高频批处理调用触发 429 限流降级，核心引擎仍保持低负载健康存活。",
+            "fallbackOrCheck": "核查网关限流中间件日志与客户端返回的 `Retry-After` 响应头。"
+          }
+        ],
+        "io": {
+          "inSummary": "来自公网浏览器、SDK 与第三方平台的原始 TCP/HTTP 流量",
+          "inFields": [
+            { "name": "TCP/HTTP Conn", "type": "Network Socket", "desc": "承载 REST 或 SSE 长连接的网络套接字" },
+            { "name": "Security Headers", "type": "HTTP Headers", "desc": "携带身份凭证与目标空间编号的头部集合" }
+          ],
+          "transform": "执行协议解码、超时控制与边界防刷后，以内部 RPC/方法调用转发至核心编排引擎。",
+          "outSummary": "向 `core` 转发受控内部调用，并向终端回写标准 JSON 或流式 SSE 响应",
+          "outFields": [
+            { "name": "Normalized Call", "type": "Internal RPC", "desc": "剥离网络传输噪音后的纯净内部请求" },
+            { "name": "SSE Frame Stream", "type": "text/event-stream", "desc": "逐块刷新的增量响应帧序列" }
+          ]
+        },
+        "examPoints": ["网关传输层与业务层隔离", "SSE 禁用代理缓冲", "Conn Done 级联取消防算力空转"],
+        "interviewQuestions": [
+          {
+            "q": "从架构分层看，如果接入网关出现故障，系统的“爆炸半径”是什么？哪些后端资产仍是安全的？",
+            "focus": "考察架构边界意识与故障域隔离",
+            "a": "接入网关挂掉会导致全部在线实时入口中断（前端报 502/503），但核心编排引擎的内部状态、已落库在存储层的结构化数据以及纯离线批处理流水线依然完好无损；恢复网关实例或切换流量入口即可秒级复原服务。"
+          },
+          {
+            "q": "为什么在流式 AI 网关层，经常要显式设置 `X-Accel-Buffering: no` 等响应头？",
+            "focus": "考察 Nginx/网关代理与 SSE 首字延迟实战",
+            "a": "Nginx 等反向代理默认开启响应缓冲，会攒够几 KB 数据才一次性发给浏览器，导致后端明明秒级吐字但前端用户卡死十几秒才看到整段输出。禁用缓冲才能保证每个事件帧第一时间直达终端。"
+          }
+        ]
+      },
+      "core": {
+        "role": "【技术组件 · 核心编排引擎】位于系统计算中枢，负责流式管理器工厂装配、业务生命周期调度以及与存储/外部中间件的桥接编排。",
+        "whyNeed": "将易变的业务流程控制与易变的基础设施实现（Redis、内存、不同 DB 驱动）同时集中在一个无状态可水平扩展的核心引擎层，能够最大化降低跨模块协调成本。",
+        "problemsSolved": [
+          "避免 **中间件厂商锁定**：通过接口工厂把 Redis 等中间件封装在可插拔适配器后面。",
+          "支撑 **计算层无状态水平扩容**：引擎自身不保留不可恢复的内存单点，故障随时漂移。"
+        ],
+        "principles": [
+          {
+            "title": "接口倒置与运行时注入",
+            "detail": "编排引擎面向 `StreamManager` 接口编程，启动期依据环境变量决定注入分支。",
+            "anchor": "src/factory.go:L1-L15"
+          },
+          {
+            "title": "优雅退化与可观测挂载",
+            "detail": "驱动装配阶段统一记录选择的后端类型，便于线上排查单机/集群模式误配。",
+            "anchor": "src/factory.go:L16-L21"
+          },
+          {
+            "title": "统一错误处理与事务协调",
+            "detail": "协调流式发布与存储落库的先后顺序，确保失败状态可回溯。",
+            "anchor": "src/factory.go:L22-L25"
+          }
+        ],
+        "failureScenarios": [
+          {
+            "severity": "P0",
+            "trigger": "核心引擎与外部 Redis 中间件之间出现网络分区或连接池耗尽",
+            "prodImpact": "实时流式编排与续流功能全面不可用；若采用单机内存兜底则退化为单实例可用（多实例丢续流）。",
+            "fallbackOrCheck": "检查 Redis 探活指标、连接池等待耗时以及 `NewStreamManager` 初始化告警。"
+          },
+          {
+            "severity": "P1",
+            "trigger": "单节点 OOM 导致核心引擎 Pod 被系统杀掉",
+            "prodImpact": "正在该节点执行中的单个会话流短暂中断，但因已落库和外置流机制，其余副本立刻接管后续请求。",
+            "fallbackOrCheck": "排查容器内存水位曲线、大对象缓存设置及重启事件记录。"
+          }
+        ],
+        "io": {
+          "inSummary": "来自 `api` 网关的内部调度请求与基础设施配置参数",
+          "inFields": [
+            { "name": "Dispatch Command", "type": "Internal Call", "desc": "经网关清洗鉴权后的核心任务指令" },
+            { "name": "Infra Dependencies", "type": "Config / Pool", "desc": "Redis、Memory 及 DB 连接句柄集合" }
+          ],
+          "transform": "选择匹配的流驱动与业务策略完成执行调度，并将流式结果交回网关、状态快照写往存储层。",
+          "outSummary": "回传给 `api` 的增量事件流与发往 `store` 的持久化写入请求",
+          "outFields": [
+            { "name": "Stream Output", "type": "Chan / Iterator", "desc": "实时输出给网关层刷写给客户端的事件序列" },
+            { "name": "Persist Mutation", "type": "SQL / TX", "desc": "需要持久落库的业务状态与审计记录" }
+          ]
+        },
+        "examPoints": ["无状态计算节点水平扩展", "中间件可插拔工厂选型", "Redis 分区时的爆炸半径"],
+        "interviewQuestions": [
+          {
+            "q": "技术选型上，为什么核心编排层要同时支持 Redis Stream 和进程内 Memory 两种流管理器？",
+            "focus": "考察架构选型对部署复杂度的权衡（TCO）",
+            "a": "高可用多副本集群需要跨节点共享流状态以支持断线续流和停止指令广播，非 Redis 不可；而个人开发者或小型内网部署希望单二进制一键启动、不想运维 Redis。通过工厂支持双实现，能同时兼顾企业生产高可用与极简部署体验。"
+          },
+          {
+            "q": "当核心编排引擎需要接入第 3 种消息中间件（如 NATS）时，现有分层架构应该怎么扩展？",
+            "focus": "考察开闭原则（OCP）与插件扩展性",
+            "a": "只需新增实现 `StreamManager` 接口的 `NatsStreamManager` 结构，并在 `src/factory.go` 的 `switch` 分支增加一个 case；网关层和持久化存储层代码无需修改一行。"
+          }
+        ]
+      },
+      "store": {
+        "role": "【技术组件 · 持久化存储】全系统的单一事实来源（SSOT），统筹 PostgreSQL 集群与 SQLite 轻量库的双模式兼容，承担结构化状态、唯一约束与审计记录持久化。",
+        "whyNeed": "缓存与内存随时可能重启清空，系统必须有一层遵循 ACID 事务与外键/唯一约束的权威存储底座，把核心资产与业务状态安全落地，同时兼容单机零配置与企业级高可用数据库。",
+        "problemsSolved": [
+          "消除 **双写不一致与状态幻觉**：所有关键状态变更均落入具备事务保证的 SSOT 主库。",
+          "降低 **多环境部署摩擦**：标准 SQL 方言兼容生产 PostgreSQL 与单机 SQLite。"
+        ],
+        "principles": [
+          {
+            "title": "幂等 DDL 迁移与版本演进",
+            "detail": "使用 `CREATE TABLE IF NOT EXISTS` 与 `CREATE INDEX IF NOT EXISTS` 保障重复启动零报错。",
+            "anchor": "migrations/001.sql:L1-L8"
+          },
+          {
+            "title": "强约束 Schema 防护最后防线",
+            "detail": "以非空约束、联合唯一索引替代应用层脆弱判重。",
+            "anchor": "migrations/001.sql:L9-L14"
+          },
+          {
+            "title": "高选择性复合索引规划",
+            "detail": "针对租户范围过滤场景预设前缀复合索引控制查询 P99 延迟。",
+            "anchor": "migrations/001.sql:L15-L18"
+          }
+        ],
+        "failureScenarios": [
+          {
+            "severity": "P0",
+            "trigger": "主库磁盘写满、主从切换异常或连接池全部占满",
+            "prodImpact": "全局爆炸半径：所有依赖落库与元数据校验的读写业务全部阻断（需紧急扩容磁盘或切换只读降级）。",
+            "fallbackOrCheck": "优先核查 DB 活跃连接数、慢查询锁等待（`pg_stat_activity`）及存储卷剩余空间。"
+          },
+          {
+            "severity": "P1",
+            "trigger": "新版本上线漏跑数据库迁移脚本 `001.sql`",
+            "prodImpact": "启动期健康检查或对应写操作报 `relation does not exist`，其余未触及该表的只读查询不受影响。",
+            "fallbackOrCheck": "查看数据库迁移版本号记录表与服务启动初始化日志。"
+          }
+        ],
+        "io": {
+          "inSummary": "来自 `core` 引擎的 SQL 读写事务与版本化 DDL 迁移指令",
+          "inFields": [
+            { "name": "Transactional SQL", "type": "SQL Query / DML", "desc": "带租户条件的读写与幂等插入语句" },
+            { "name": "Schema Migration", "type": "DDL Script", "desc": "应用启动期自动执行的幂等建表脚本" }
+          ],
+          "transform": "利用 WAL 日志、行锁与 B+Tree 索引确保事务持久性、并发冲突裁决及低延迟点查。",
+          "outSummary": "返回权威查询结果集、自增/UUID 主键与事务提交回执",
+          "outFields": [
+            { "name": "Committed Row", "type": "DB Record", "desc": "持久化后的完整行记录与版本时间戳" },
+            { "name": "Constraint Error", "type": "SQLSTATE", "desc": "冲突时上抛标准唯一约束错误码供业务转译" }
+          ]
+        },
+        "examPoints": ["SSOT 单一事实来源", "幂等 DDL 启动迁移", "存储故障全局爆炸半径"],
+        "interviewQuestions": [
+          {
+            "q": "持久化存储层一旦发生连接耗尽或只读故障，为什么比网关层挂掉更危险？该如何控制它的风险？",
+            "focus": "考察数据库作为全局有状态单点的容灾策略",
+            "a": "无状态网关挂掉只需秒级重启或换实例，而主库不可用会影响全链路状态校验与写操作，恢复还需要考虑连接风暴和数据一致性。工程上应做好连接池上限隔离、慢 SQL 超时保护、读写分离与磁盘水位提前告警。"
+          },
+          {
+            "q": "为什么 SQL 迁移脚本普遍使用 `IF NOT EXISTS` 等幂等写法？",
+            "focus": "考察自动化部署与多实例并发拉起兼容性",
+            "a": "容器滚动升级或故障自愈重启时，同一份启动迁移逻辑可能被多次重复执行。幂等 DDL 能确保已存在表和索引不会报错阻塞启动，同时又不覆盖存量业务数据。"
+          }
+        ]
+      }
+    },
+    "businessflow": {
+      "bn_in": {
+          "role": "【在线业务泳道 · Phase 1】终端用户发起会话请求的第一业务触点，保障交互即时响应、首字加载可感及异常提示友好明确。",
+          "whyNeed": "从用户与产品 SLA 视角，入口节点决定了“点击发送后是否立即给前端可渲染反馈，还是让用户傻等白屏”。把入口验证独立为泳道首节点，有助于把参数报错在毫秒级反馈给用户。",
+          "problemsSolved": [
+            "缩短 **用户首屏等待与报错反馈 SLA**：非法输入或无权限空间在入口立刻收到清晰提示。",
+            "避免 **弱网连点生成多份重复提问**：前端防抖与入口追踪号对齐，确保每问必对应唯一结果。"
+          ],
+          "principles": [
+            {
+              "title": "快速拒绝无效用户输入",
+              "detail": "发现空查询或缺失租户上下文立刻返回可读错误提示，不消耗用户等待时间。",
+              "anchor": "src/gateway.go:L5-L12"
+            },
+            {
+              "title": "全链路追踪打点起点",
+              "detail": "在业务受理瞬间绑定追踪 ID，为后续工单排障与体验耗时分析提供基准时间。",
+              "anchor": "src/gateway.go:L17-L20"
+            },
+            {
+              "title": "流式通道无缝转交",
+              "detail": "验证通过后即刻把业务请求推进到核心执行阶段，避免阻塞主线程。",
+              "anchor": "src/gateway.go:L13-L16"
+            }
+          ],
+          "failureScenarios": [
+            {
+              "severity": "P1",
+              "trigger": "用户在切换租户空间瞬间立刻点击发送，请求未带新空间标识",
+              "prodImpact": "用户页面弹出参数/空间异常提示，但不会污染目标空间数据，刷新重试即可正常问答。",
+              "fallbackOrCheck": "引导前端核查空间切换状态锁，检查网关返回的 `400` 业务错误详情。"
+            },
+            {
+              "severity": "P1",
+              "trigger": "弱网环境下用户连续两次点击发送按钮",
+              "prodImpact": "可能发起两条近似请求导致计费翻倍或回答闪烁，需依赖入口追踪与前端防重。",
+              "fallbackOrCheck": "查看界面发送按钮禁用状态与服务端 `request_id` 去重日志。"
+            }
+          ],
+          "io": {
+            "inSummary": "终端用户在聊天框触发的一次完整业务提问动作",
+            "inFields": [
+              { "name": "user_query", "type": "用户文本", "desc": "前端界面录入的问题正文" },
+              { "name": "workspace_id", "type": "空间选择", "desc": "当前用户选中的工作空间上下文" }
+            ],
+            "transform": "完成业务受理前的基本准入校验与会话上下文包装，派发至下一泳道节点。",
+            "outSummary": "已受理的业务会话指令，流向 `bn_core` 开始流式执行",
+            "outFields": [
+              { "name": "AcceptedTask", "type": "业务指令", "desc": "具备合法租户与追踪编号的受理任务" },
+              { "name": "FastFailError", "type": "用户提示", "desc": "不满足条件时即刻吐出的友好报错信息" }
+            ]
+          },
+          "examPoints": ["快速失败缩短用户等待 SLA", "弱网连点防重复提交", "友好错误提示与追踪关联"],
+          "interviewQuestions": [
+            {
+              "q": "从业务体验和 SLA 角度看，为什么 `bn_in` 要先做快速校验再往后流转，而不是直接扔进异步队列慢慢报错？",
+              "focus": "考察同步快失败（Fail-Fast）与异步长任务的 UX 边界划分",
+              "a": "参数缺失或空间权限错误属于确定性的即时反馈，用户在界面上希望 50 毫秒内就看到提示去修改。如果放进异步链路转一圈再回调报错，用户会以为系统卡死，极大损害交互口碑。"
+            },
+            {
+              "q": "客服反馈某位用户发提问一直报错，排障时怎么借助 `bn_in` 的设计快速定位原因？",
+              "focus": "考察业务线排障闭环能力",
+              "a": "让用户或前端错误弹窗展示 `request_id`，直接按该 ID 串联检索网关受理日志与下游核心节点状态，几秒内即可区分是前端参数漏传、权限拒绝还是下游超时。"
+            }
+          ]
+        },
+        "bn_core": {
+          "role": "【在线业务泳道 · Phase 2】业务执行中段枢纽，根据当前运行模式动态选择记忆型或持久化流引擎，兑现断线不停答的连续性 SLA。",
+          "whyNeed": "员工在移动办公或跨页面切换时经常断线，如果业务流在中途无法保存并恢复已生成的进度，用户就会不断遭遇“生成到一半消失”的糟糕体验。",
+          "problemsSolved": [
+            "保障 **移动端/弱网用户的连续性阅读体验**：生产集群下支持断线重连从断点续接流式回答。",
+            "实现 **单机试用版开箱即用**：个人开发者无需先装 Redis 即可跑通完整问答业务流。"
+          ],
+          "principles": [
+            {
+              "title": "按运行形态自适应切流",
+              "detail": "业务请求抵达后自动使用启动期装配好的对应流引擎执行推送，上层体验一致。",
+              "anchor": "src/factory.go:L9-L18"
+            },
+            {
+              "title": "异常配置安全降级兜底",
+              "detail": "配置缺省时不让整个问答业务崩溃，自动回落可用的本地流通道保底服务。",
+              "anchor": "src/factory.go:L19-L25"
+            },
+            {
+              "title": "执行完成触发异步/落库流转",
+              "detail": "主问答产出后将状态记录流向持久化泳道留痕，形成业务闭环。",
+              "anchor": "src/factory.go:L1-L8"
+            }
+          ],
+          "failureScenarios": [
+            {
+              "severity": "P1",
+              "trigger": "业务运行在单机内存模式下发生容器重启或流量漂移",
+              "prodImpact": "用户刷新页面后无法接着续播上一句未说完的回答（已落库的历史轮次对话依然保留），需提示重新生成。",
+              "fallbackOrCheck": "引导运维在多副本集群切换 `STREAM_MANAGER_TYPE=redis` 并检查续流监控。"
+            },
+            {
+              "severity": "P1",
+              "trigger": "外部 Redis 流写入响应变慢",
+              "prodImpact": "用户体感打字机出字卡顿甚至超时，但不会影响已完成历史问答的查询浏览。",
+              "fallbackOrCheck": "核查 Redis 延迟监控及核心引擎到 Redis 的网络抖动日志。"
+            }
+          ],
+          "io": {
+            "inSummary": "由 `bn_in` 受理并透传而来的业务对话任务",
+            "inFields": [
+              { "name": "AcceptedTask", "type": "业务任务", "desc": "已验明身份与空间的实时对话任务" },
+              { "name": "RuntimeMode", "type": "运行模式", "desc": "当前实例所处的集群/单机部署态" }
+            ],
+            "transform": "驱动流管理器生成并推送实时响应事件，完结后整理最终业务状态发往落库泳道。",
+            "outSummary": "实时回传用户的打字机回答 + 发往 `bn_store` 的持久化留痕通知",
+            "outFields": [
+              { "name": "LiveAnswerChunks", "type": "流式输出", "desc": "呈现给前端界面的实时正文内容" },
+              { "name": "StatusAuditPayload", "type": "落库载荷", "desc": "待写入持久层的完成态业务记录" }
+            ]
+          },
+          "examPoints": ["断线续流保障连续性 SLA", "单机开箱即用与集群平滑升级", "异常模式兜底不断服"],
+          "interviewQuestions": [
+            {
+              "q": "产品经理问：如果用户在回答吐到一半时不小心关掉浏览器标签页，再打开时怎么决定他能不能接着看完？",
+              "focus": "考察产品能力与底层流式模式的对应关系",
+              "a": "如果企业生产环境按标准启用了 Redis 流模式，事件会持久化在共享总线中，用户重进页面即可沿断点毫秒级续播剩下内容；若仅使用极简单机内存模式，重启或跨实例则会提示重发，但历史落库记录不丢失。"
+            },
+            {
+              "q": "为什么在业务泳道图上，`bn_core` 处于在线业务泳道而落库节点放在另一个泳道？",
+              "focus": "考察业务职责与异常关注点的泳道切分原则",
+              "a": "在线业务泳道追求“低延迟响应与用户交互连续性”，而持久化泳道关注“数据强一致、权限硬隔离与审计留痕”。拆分泳道能清晰体现：在线交付可以借助流式异步推进，关键资产必须进入持久化泳道兜底。"
+            }
+          ]
+        },
+        "bn_store": {
+          "role": "【持久化例外/审计泳道 · Phase 3】端到端业务终局兜底节点，把用户凭据、配置与会话结果安全落入唯一约束表，保障合规可审计与重复操作不产生脏账。",
+          "whyNeed": "所有前端交互和流式过程终究会落回数据资产本身。若不在业务终点设立独立的持久化与唯一性守门节点，用户重复提交、刷新重放很快就会把列表塞满同名垃圾条目或引发账目混乱。",
+          "problemsSolved": [
+            "保障 **并发点击提交时业务结果幂等唯一**：同一租户下不会因前端误触多出两条同名记录。",
+            "支撑 **后续合规审计与问题回溯**：每条状态变迁均有可追溯的时间戳与租户归属记录。"
+          ],
+          "principles": [
+            {
+              "title": "租户维度资源唯一性护栏",
+              "detail": "从业务源头保证同一空间下关键凭据或条目名称不重名、不互相覆写。",
+              "anchor": "migrations/001.sql:L6-L13"
+            },
+            {
+              "title": "生命周期状态显式归档",
+              "detail": "将流式处理最终态落盘，避免前端列表一直卡死在“处理中”僵尸状态。",
+              "anchor": "migrations/001.sql:L10-L14"
+            },
+            {
+              "title": "列表检索性能与隔离并重",
+              "detail": "支撑管理后台毫秒级分页查看本空间资产，同时天然隔绝邻近租户数据。",
+              "anchor": "migrations/001.sql:L15-L18"
+            }
+          ],
+          "failureScenarios": [
+            {
+              "severity": "P0",
+              "trigger": "落库事务异常失败但前端未感知，或错误地静默吞掉约束冲突",
+              "prodImpact": "用户刷新页面后发现刚才“看似成功”的配置/记录凭空消失，严重破坏系统信任度。",
+              "fallbackOrCheck": "核对落库接口是否把失败准确回传前端提示“保存失败请重试”，并追踪 DB 事务日志。"
+            },
+            {
+              "severity": "P1",
+              "trigger": "用户重复提交同名条目触发唯一键冲突",
+              "prodImpact": "界面应清晰提示“该名称已存在，请更换名称或编辑原条目”，而不是弹出晦涩的 SQL 堆栈报错。",
+              "fallbackOrCheck": "检查业务 Service 层是否正确将唯一冲突错误翻译为人类可读的 409 中文提示。"
+            }
+          ],
+          "io": {
+            "inSummary": "来自 `bn_core` 的待归档状态载荷与用户元信息",
+            "inFields": [
+              { "name": "StatusAuditPayload", "type": "业务状态", "desc": "需要持久化的最终业务执行摘要" },
+              { "name": "TenantScope", "type": "租户边界", "desc": "写死在服务端不可伪造的空间归属" }
+            ],
+            "transform": "执行带租户约束与唯一防重检查的事务落库，转化为前端可查询的历史资产记录。",
+            "outSummary": "可长期查阅的持久化业务资产记录与终端成功状态回执",
+            "outFields": [
+              { "name": "PersistedItem", "type": "历史资产", "desc": "用户刷新页面后仍稳定展示在列表中的权威记录" },
+              { "name": "AuditTrail", "type": "审计状态", "desc": "供管理员合规排查的时间戳与结果标志" }
+            ]
+          },
+          "examPoints": ["最终落库保数据不丢", "友好转译唯一约束报错", "避免前端列表僵尸态"],
+          "interviewQuestions": [
+            {
+              "q": "用户点击保存凭据时因为网络抖动连发了两次请求，在 `bn_store` 泳道怎么设计才能既不产生两条脏数据，又不让用户界面显示报错？",
+              "focus": "考察数据库唯一约束与业务幂等体验的结合",
+              "a": "数据库靠 `UNIQUE(tenant_id, item_name)` 物理挡住第二条重复写入；业务层捕获唯一键冲突错误后，若携带同一 `request_id` 或内容一致则按幂等成功返回已有记录 ID，若确实是不同请求重名再友好提示“名称已存在”。"
+            },
+            {
+              "q": "如果前段流式回答已经展示给了用户，但最后一步 `bn_store` 落库失败了，系统体验会出什么问题？如何补救？",
+              "focus": "考察流式交付与持久化落库的异步补偿意识",
+              "a": "如果不补救，用户当前屏幕看到回答了，但刷新页面聊天记录少了一截。工程上应在最终事件发出时异步重试落库，失败写入死信告警并尽量在流缓存 TTL 内完成补偿持久化。"
+            }
+          ]
+      }
+    }
   },
   "stations": [
     {
@@ -102,36 +722,160 @@
       "stars": 5,
       "techCompIds": ["api"],
       "wbTarget": { "moduleId": "m_core", "nodeId": "n1" },
-      "inputSpec": "外部 HTTP 请求（含鉴权 Header 与业务 JSON）",
-      "outputSpec": "已解析的上下文对象，准备交给核心工厂处理",
+      "inputSpec": "外部 HTTP 请求（含租户 Header 与业务 JSON）",
+      "outputSpec": "已解析的 ChatContext，准备交给核心工厂处理",
       "analogy": "像机场安检入口：核验登机牌后分配通道。",
       "whyBlock": {
         "painPoint": "多端请求参数不统一且缺少追踪号，线上排查极难定位。",
         "analogy": "就像**机场安检口**：统一核验登机牌、盖唯一追踪戳，再分流到对应登机口。",
-        "avoidRabbitHole": "先看主入口与核心路由，暂时跳过外围日志格式化代码。"
+        "avoidRabbitHole": "先看主入口与租户/参数校验逻辑，暂时跳过外围日志格式化代码。"
       },
       "ioContract": {
         "inType": "HTTP POST /api/v1/chat",
-        "inFields": [{ "name": "query", "type": "string", "desc": "用户输入问题" }],
-        "inSample": "{\n  \"query\": \"hello world\"\n}",
-        "transformSteps": ["解析 JSON 请求体并注入 RequestID"],
+        "inFields": [
+          { "name": "X-Tenant-ID", "type": "Header", "desc": "请求所属租户空间标识" },
+          { "name": "query", "type": "string", "desc": "用户输入问题" }
+        ],
+        "inSample": "POST /api/v1/chat\nX-Tenant-ID: tenant_demo\n{\n  \"query\": \"hello world\"\n}",
+        "transformSteps": [
+          "校验 `X-Tenant-ID` 非空，防止无租户请求穿透",
+          "按白名单解析 JSON 中的 `query` 与流式开关",
+          "注入或透传唯一 `request_id` 封装为 `ChatContext`"
+        ],
         "outType": "ChatContext",
-        "outFields": [{ "name": "request_id", "type": "string", "desc": "全链路追踪 ID" }],
-        "outSample": "{\n  \"request_id\": \"req_001\",\n  \"query\": \"hello world\"\n}"
+        "outFields": [
+          { "name": "tenant_id", "type": "string", "desc": "可信租户空间标识" },
+          { "name": "request_id", "type": "string", "desc": "全链路追踪 ID" }
+        ],
+        "outSample": "{\n  \"tenant_id\": \"tenant_demo\",\n  \"request_id\": \"req_001\",\n  \"query\": \"hello world\"\n}"
       },
-      "files": [{ "id": "f1", "label": "factory.go", "path": "internal/stream/factory.go", "syntax": "go", "sliceStart": 11, "sliceEnd": 40 }],
+      "files": [{ "id": "f1", "label": "gateway.go", "path": "src/gateway.go", "syntax": "go", "sliceStart": 1, "sliceEnd": 20 }],
       "steps": [
-        { "id": "s1_1", "order": 1, "label": "配置解析", "sublabel": "读取类型参数", "tag": "初始化", "type": "frontend", "edgeLabel": "路由", "fileId": "f1", "startLine": 11, "endLine": 25, "explain": "读取配置决定底层流管理实现。", "pitfall": "缺少默认值时容易空指针。" },
-        { "id": "s1_2", "order": 2, "label": "实例装配", "sublabel": "Redis/内存切换", "tag": "工厂", "type": "backend", "edgeLabel": "", "fileId": "f1", "startLine": 26, "endLine": 40, "explain": "按类型返回对应 StreamManager 接口实现。", "pitfall": "多副本部署切勿误用内存版导致续流失效。" }
+        { "id": "s1_1", "order": 1, "label": "租户与参数校验", "sublabel": "检查 Header 与正文", "tag": "门禁", "type": "frontend", "edgeLabel": "封装", "fileId": "f1", "startLine": 1, "endLine": 12, "explain": "提取租户 Header 并校验问题文本非空，缺失直接返回 400。", "pitfall": "若信任空租户头，后续查询将丢失隔离边界。" },
+        { "id": "s1_2", "order": 2, "label": "注入追踪上下文", "sublabel": "生成 RequestID", "tag": "追踪", "type": "backend", "edgeLabel": "", "fileId": "f1", "startLine": 13, "endLine": 20, "explain": "复用或兜底生成 `request_id`，输出不可变 `ChatContext`。", "pitfall": "切勿每次无条件覆盖前端传来的 `X-Request-ID`。" }
       ],
       "quiz": {
-        "question": "为什么要抽象 StreamManager 工厂？",
-        "options": ["增加文件数量", "让集群 Redis 与单机内存无缝切换", "减少 HTTP Header", "替代数据库"],
+        "question": "在入口站 `gateway.go` 中，为什么要对 `X-Request-ID` 采取“有则复用、无则生成”策略？",
+        "options": ["减少内存占用", "同时兼容前端 TTFB 对账与无 Header 脚本追踪", "替代鉴权 Token", "加快 JSON 解析"],
         "correctIndex": 1,
-        "explanation": "依赖接口抽象后，标准集群版与 Lite 单进程版可复用同一套上层业务代码。"
+        "explanation": "前端靠自己生成的 `X-Request-ID` 计算首字耗时，后端无条件保留才能串联前后端同一条链路。"
+      },
+      "interviewQ": "入口站如何防止空参数或跨端缺失追踪号？",
+      "interviewA": "网关前移校验必填租户头与提问体拦截非法请求，同时按“有则复用、无则 UUID 兜底”注入全链路 RequestID。"
+    },
+    {
+      "id": "s2",
+      "codeLabel": "1-2",
+      "flowId": "flow_online",
+      "stage": 1,
+      "row": 0,
+      "dfNodeId": "df_proc",
+      "dfLabel": "工厂装配流引擎",
+      "dfSublabel": "Redis · Memory",
+      "dfTag": "核心工厂",
+      "nodeType": "backend",
+      "title": "流式核心：如何通过工厂隔离单机与集群差异？",
+      "duration": "12 分钟",
+      "stars": 5,
+      "techCompIds": ["core"],
+      "wbTarget": { "moduleId": "m_core", "nodeId": "n1" },
+      "inputSpec": "已解析的 `ChatContext` 与 `STREAM_MANAGER_TYPE` 配置",
+      "outputSpec": "已完成驱动绑定的 `StreamManager` 与流写入句柄",
+      "analogy": "像插线板适配器：同一台电脑不管插两孔还是三孔插座都能供电。",
+      "whyBlock": {
+        "painPoint": "集群部署必须用 Redis 共享流状态，本地调试和单机版不想装 Redis。",
+        "analogy": "就像**电源适配器**：业务代码只管接统一接口，启动时由工厂按插座类型插入 Redis 或内存实现。",
+        "avoidRabbitHole": "重点看工厂接口与分支兜底，先不用深究 Redis 客户端连接池调优参数。"
+      },
+      "ioContract": {
+        "inType": "StreamConfig",
+        "inFields": [
+          { "name": "driver_type", "type": "string", "desc": "环境变量指定的驱动类型（`redis`/`memory`）" },
+          { "name": "ctx", "type": "ChatContext", "desc": "上游传入的会话上下文" }
+        ],
+        "inSample": "{\n  \"driver_type\": \"redis\",\n  \"tenant_id\": \"tenant_demo\",\n  \"request_id\": \"req_001\"\n}",
+        "transformSteps": [
+          "标准化清洗 `driver_type` 字符串（去空格并转小写）",
+          "按驱动类型分支装配 `RedisStreamManager` 或 `MemoryStreamManager`",
+          "未知类型进入 `default` 兜底内存实现，杜绝空指针 panic"
+        ],
+        "outType": "StreamManager",
+        "outFields": [
+          { "name": "manager", "type": "StreamManager", "desc": "实现 `Publish` 语义的流管理器实例" },
+          { "name": "mode", "type": "string", "desc": "实际生效的运行模式标记" }
+        ],
+        "outSample": "{\n  \"mode\": \"redis\",\n  \"stream_key\": \"stream:tenant_demo:req_001\",\n  \"ready\": true\n}"
+      },
+      "files": [{ "id": "f2", "label": "factory.go", "path": "src/factory.go", "syntax": "go", "sliceStart": 1, "sliceEnd": 25 }],
+      "steps": [
+        { "id": "s2_1", "order": 1, "label": "接口与类型定义", "sublabel": "定义 StreamManager", "tag": "抽象", "type": "backend", "edgeLabel": "分派", "fileId": "f2", "startLine": 1, "endLine": 11, "explain": "定义最小化 `StreamManager` 接口，把底层读写细节从业务编排剥离。", "pitfall": "接口方法粒度过大时，新增驱动实现成本会指数级上升。" },
+        { "id": "s2_2", "order": 2, "label": "驱动分支与兜底", "sublabel": "Redis/Memory 切换", "tag": "工厂", "type": "backend", "edgeLabel": "", "fileId": "f2", "startLine": 12, "endLine": 25, "explain": "按类型返回对应 `StreamManager` 实例，并在 `default` 提供安全内存回退。", "pitfall": "多副本生产部署误用内存模式会导致跨节点断线续流失效。" }
+      ],
+      "quiz": {
+        "question": "为什么要抽象 `StreamManager` 工厂而不是直接在业务里调 Redis？",
+        "options": ["增加文件数量", "让集群 Redis 与单机内存无缝切换且业务代码零改动", "减少 HTTP Header", "替代 SQL 数据库"],
+        "correctIndex": 1,
+        "explanation": "依赖接口抽象后，标准集群版与轻量单机版可复用同一套上层业务编排代码。"
       },
       "interviewQ": "集群版与单机版如何共用一套流式代码？",
-      "interviewA": "通过统一接口 + 工厂方法在启动期按配置注入 Redis 或 Memory 实现，上层业务零感知。"
+      "interviewA": "通过统一 `StreamManager` 接口 + `NewStreamManager` 工厂按配置注入 Redis 或 Memory 实现，上层完全无感知。"
+    },
+    {
+      "id": "s3",
+      "codeLabel": "1-3",
+      "flowId": "flow_online",
+      "stage": 2,
+      "row": 0,
+      "dfNodeId": "df_out",
+      "dfLabel": "状态与凭据落库",
+      "dfSublabel": "SQL · UNIQUE",
+      "dfTag": "持久化",
+      "nodeType": "database",
+      "title": "权威落库：如何用联合唯一索引守住多租户一致性？",
+      "duration": "10 分钟",
+      "stars": 4,
+      "techCompIds": ["store"],
+      "wbTarget": { "moduleId": "m_core", "nodeId": "n2" },
+      "inputSpec": "流引擎执行产出的最终状态快照与资源标识",
+      "outputSpec": "经数据库唯一约束与租户索引持久化后的权威行记录",
+      "analogy": "像银行账本复核落账：同一笔流水号绝不允许记两次重复账。",
+      "whyBlock": {
+        "painPoint": "应用层“先查后插”在高并发下存在竞态漏洞，且查询漏配索引会全表扫。",
+        "analogy": "就像**银行柜台总账唯一流水号**：数据库引擎亲自做原子排重，并发再高也不会记重。",
+        "avoidRabbitHole": "重点关注 `UNIQUE(tenant_id, item_name)` 与最左前缀索引顺序。"
+      },
+      "ioContract": {
+        "inType": "PersistItemCommand",
+        "inFields": [
+          { "name": "tenant_id", "type": "VARCHAR(64)", "desc": "所属租户 ID" },
+          { "name": "item_name", "type": "VARCHAR(128)", "desc": "同租户内唯一的条目名称" }
+        ],
+        "inSample": "{\n  \"tenant_id\": \"tenant_demo\",\n  \"item_name\": \"prod_api_token\",\n  \"status\": \"active\"\n}",
+        "transformSteps": [
+          "启动期幂等执行 `CREATE TABLE IF NOT EXISTS` 确保 Schema 就绪",
+          "利用 `UNIQUE(tenant_id, item_name)` 原子拦截同空间并发重名写",
+          "按 `(tenant_id, created_at)` 复合索引快速服务租户列表查询"
+        ],
+        "outType": "PersistedItemRow",
+        "outFields": [
+          { "name": "id", "type": "BIGINT", "desc": "数据库自增主键" },
+          { "name": "status", "type": "VARCHAR(32)", "desc": "落库后的权威状态" }
+        ],
+        "outSample": "{\n  \"id\": 1024,\n  \"tenant_id\": \"tenant_demo\",\n  \"item_name\": \"prod_api_token\",\n  \"status\": \"active\"\n}"
+      },
+      "files": [{ "id": "f3", "label": "001.sql", "path": "migrations/001.sql", "syntax": "sql", "sliceStart": 1, "sliceEnd": 18 }],
+      "steps": [
+        { "id": "s3_1", "order": 1, "label": "建表与联合唯一约束", "sublabel": "UNIQUE(tenant, name)", "tag": "防重", "type": "database", "edgeLabel": "建索引", "fileId": "f3", "startLine": 1, "endLine": 14, "explain": "声明租户前缀与联合唯一约束，从存储底层堵死并发重复写入。", "pitfall": "若把唯一约束写成全局 `UNIQUE(item_name)`，会导致租户 A 占用后租户 B 无法创建。" },
+        { "id": "s3_2", "order": 2, "label": "租户前缀查询索引", "sublabel": "idx_items_tenant", "tag": "索引", "type": "database", "edgeLabel": "", "fileId": "f3", "startLine": 15, "endLine": 18, "explain": "建立以 `tenant_id` 为最左前导列的复合索引，保障列表分页毫秒响应。", "pitfall": "缺失索引或把时间列放第一位会导致租户数据增长后全表扫描。" }
+      ],
+      "quiz": {
+        "question": "为什么唯一索引必须写成 `UNIQUE(tenant_id, item_name)` 而不是 `UNIQUE(item_name)`？",
+        "options": ["减少磁盘空间", "允许不同租户各自拥有同名配置同时保证同租户内唯一", "加速 DELETE 语句", "SQL 语法强制要求"],
+        "correctIndex": 1,
+        "explanation": "多租户隔离要求命名空间互相独立，`tenant_id` 联合唯一既防并发重复又避免跨租户命名抢占。"
+      },
+      "interviewQ": "数据库层如何保障高并发写入时的租户隔离与幂等？",
+      "interviewA": "依靠幂等 DDL 建表、`UNIQUE(tenant_id, item_name)` 原子防并发重名，以及以 `tenant_id` 为前导列的复合查询索引。"
     }
   ],
   "workbenchModules": [
@@ -152,40 +896,49 @@
           "syntax": "tree",
           "virtualLines": [
             "demo/                       # 📦 示例项目根目录",
-            "├── internal/stream/        # 🌊 流式管理模块",
-            "│   └── factory.go          # 流管理器工厂入口"
+            "├── src/                    # ⚙ 在线核心源码目录",
+            "│   ├── gateway.go          # 请求接入与上下文校验入口",
+            "│   └── factory.go          # 流管理器工厂入口",
+            "└── migrations/             # 🗄 数据库迁移脚本目录",
+            "    └── 001.sql             # 租户联合唯一表结构定义"
           ]
         }
       ],
       "nodes": [
-        { "id": "dir_core", "stepOrder": 1, "label": "核心流管理", "sublabel": "internal/stream/", "tag": "核心", "type": "backend", "x": 34, "y": 44, "w": 228, "h": 86, "fileId": "tree_root", "startLine": 1, "endLine": 3, "summary": "流式工厂与管理", "deepDive": "负责流式管理器装配。", "pitfall": "多副本需启用 Redis。", "interviewQ": "如何解耦存储？", "interviewA": "接口抽象。", "jumpTo": { "moduleId": "m_core", "nodeId": "n1", "label": "进入核心流程图" } }
+        { "id": "dir_core", "stepOrder": 1, "label": "核心流与落库", "sublabel": "src/ · migrations/", "tag": "核心", "type": "backend", "x": 34, "y": 44, "w": 228, "h": 86, "fileId": "tree_root", "startLine": 1, "endLine": 6, "summary": "流式工厂与持久化", "deepDive": "负责网关请求接入、流式管理器装配与唯一索引落库。", "pitfall": "多副本部署务必开启 Redis 流模式。", "interviewQ": "如何解耦存储与实现？", "interviewA": "面向接口 + 启动期工厂注入。", "jumpTo": { "moduleId": "m_core", "nodeId": "n1", "label": "进入核心流程图" } }
       ],
       "edges": []
     },
     {
       "id": "m_core",
-      "shortTitle": "① 核心流管理",
+      "shortTitle": "① 核心流与存储",
       "overviewOrder": 1,
-      "overviewBadge": "① 核心流管理",
+      "overviewBadge": "① 核心流与存储",
       "parentOverviewNodeId": "dir_core",
-      "stationId": "s1",
-      "title": "核心流管理装配流程",
+      "stationId": "s2",
+      "title": "核心流管理与落库流程",
       "subtitle": "点击节点定位真实源码",
-      "viewBox": [860, 220],
-      "files": [{ "id": "f_fac", "label": "factory.go", "path": "internal/stream/factory.go", "syntax": "go", "sliceStart": 11, "sliceEnd": 40 }],
-      "nodes": [
-        { "id": "n1", "stepOrder": 1, "label": "工厂装配", "sublabel": "factory.go", "tag": "工厂", "type": "backend", "x": 34, "y": 44, "w": 228, "h": 86, "fileId": "f_fac", "startLine": 11, "endLine": 40, "summary": "装配 StreamManager", "deepDive": "按配置装配具体实现。", "pitfall": "注意默认分支兜底。", "interviewQ": "为何用工厂模式？", "interviewA": "隔离部署形态差异。" }
+      "viewBox": [660, 180],
+      "files": [
+        { "id": "f_fac", "label": "factory.go", "path": "src/factory.go", "syntax": "go", "sliceStart": 1, "sliceEnd": 25 },
+        { "id": "f_sql", "label": "001.sql", "path": "migrations/001.sql", "syntax": "sql", "sliceStart": 1, "sliceEnd": 18 }
       ],
-      "edges": []
+      "nodes": [
+        { "id": "n1", "stepOrder": 1, "label": "工厂装配", "sublabel": "factory.go", "tag": "工厂", "type": "backend", "x": 34, "y": 44, "w": 228, "h": 86, "fileId": "f_fac", "startLine": 1, "endLine": 25, "summary": "装配 StreamManager", "deepDive": "按配置装配具体流管理器实现。", "pitfall": "注意 default 分支安全兜底。", "interviewQ": "为何用工厂模式？", "interviewA": "隔离集群与单机部署形态差异。" },
+        { "id": "n2", "stepOrder": 2, "label": "唯一约束落库", "sublabel": "001.sql", "tag": "落库", "type": "database", "x": 380, "y": 44, "w": 228, "h": 86, "fileId": "f_sql", "startLine": 1, "endLine": 18, "summary": "联合唯一建表", "deepDive": "通过联合唯一索引守住多租户并发幂等边界。", "pitfall": "切勿遗漏 tenant_id 前导列。", "interviewQ": "为何数据库层再加 UNIQUE？", "interviewA": "彻底消除应用层先查后插的并发竞态。" }
+      ],
+      "edges": [
+        { "id": "me1", "from": "n1", "to": "n2", "label": "状态落库", "variant": "emphasis" }
+      ]
     }
   ],
   "pitch": [
-    { "step": "01", "title": "开场定调", "time": "0:00-0:30", "goal": "亮定位与架构亮点", "script": "本项目采用清晰分层架构与接口工厂解耦，兼顾单机轻量与集群扩展。" }
+    { "step": "01", "title": "开场定调", "time": "0:00-0:30", "goal": "亮定位与架构亮点", "script": "本项目采用入口收敛校验 + 接口工厂解耦 + 数据库联合唯一兜底，兼顾单机轻量与集群扩展。" }
   ],
   "skipGuide": [
-    { "module": "外围脚手架", "skip": "CLI 彩蛋与日志格式化细节", "keep": "紧盯核心接口抽象（主线一第 1-1 站）" }
+    { "module": "外围脚手架", "skip": "CLI 彩蛋与日志格式化细节", "keep": "紧盯核心接口抽象与数据库约束（主线一第 1-2 / 1-3 站）" }
   ],
   "exam": [
-    { "id": "ex1", "q": "为何使用 StreamManager 工厂抽象？", "a": "隔离集群 Redis 与单机内存差异。", "stationId": "s1" }
+    { "id": "ex1", "q": "为何使用 StreamManager 工厂抽象？", "a": "隔离集群 Redis 与单机内存差异，实现上层业务代码零改动切换。", "stationId": "s2" }
   ]
 }
