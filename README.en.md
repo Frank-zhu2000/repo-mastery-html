@@ -50,8 +50,8 @@
 > **Try it zero-install in your browser**: [**🎮 Open Live Interactive Demo**](https://frank-zhu2000.github.io/repo-mastery-html/) — showcasing one real-world output generated from [`Tencent/WeKnora`](https://github.com/Tencent/WeKnora). `repo-mastery-html` adapts cleanly to **any language and open-source archetype** (Web/Backend, Frontend/UI, CLI/Compiler, or SDK/AI Engine across **18+ languages**). Note: generated study notes and per-line annotations are crafted in Simplified Chinese (`zh-CN`).
 
 <div align="center">
-  <img src="./docs/assets/03-station-code-notes.png" alt="Station-by-Station Learning Studio: Verbatim Code with Per-line Notes vs Pain Point & Micro-Flow" width="100%" />
-  <p><sub><b>Flagship View · Station-by-Station Studio:</b> Verbatim source code with 100% per-line annotations on the left (below / inline / hidden toggles) ↔ STEP 1 Pain Point + Intuition Analogy + STEP 2 Interactive Micro-Flow & Pitfalls on the right.</sub></p>
+  <img src="./docs/assets/demo-walkthrough.gif" alt="v6 Interactive Walkthrough: 3 Blueprints + 6-Dim Dossiers + Fullscreen Modal + Ctrl+K + Per-line Code Studio + Module Flows" width="100%" />
+  <p><sub><b>Full v6 Interactive Walkthrough:</b> 3 overview blueprints with anti-misclick neighbor highlighting → inline 2-column &amp; fullscreen 6-dim dossiers + Q&amp;A self-test → <code>Ctrl+K</code> global search → 100% per-line annotated code ↔ 5-STEP studio → module drill-down &amp; light theme.</sub></p>
 </div>
 
 <table>
@@ -59,31 +59,43 @@
     <td width="50%" align="center">
       <img src="./docs/assets/01-overview-dataflow.png" alt="Map 1: Full-Chain Dataflow Grid with Topology Highlight" width="100%" />
       <br />
-      <sub><b>Map 1 · Full-Chain Dataflow & Neighbor Highlight</b><br />Stage × Flow lanes with single-track focus, upstream/downstream edge highlighting & green completion sync</sub>
+      <sub><b>Map 1 · Full-Chain Dataflow &amp; Neighbor Highlight</b><br />Stage × Flow lanes with single-track focus, upstream/downstream edge highlighting &amp; green completion sync</sub>
     </td>
     <td width="50%" align="center">
-      <img src="./docs/assets/07-overview-dossier-deck.png" alt="Inline 2-Column 6-Dimension Dossier Deck" width="100%" />
+      <img src="./docs/assets/09-overview-techarch.png" alt="Map 2: Tech Architecture Boundaries and Blast Radius" width="100%" />
       <br />
-      <sub><b>View 1 · Inline 6-Dimension Dossier Deck</b><br />Collapsible 2-column encyclopedia: Role/Principles/Anchors + P0/P1 outage simulation + Neighbor jumps + Q&A self-test</sub>
+      <sub><b>Map 2 · Tech Architecture &amp; Blast Radius</b><br />Component × dashed trust boundaries × orthogonal edge highlights focusing on layering &amp; failure scope</sub>
     </td>
   </tr>
   <tr>
     <td width="50%" align="center">
+      <img src="./docs/assets/07-overview-dossier-deck.png" alt="Inline 2-Column 6-Dimension Dossier Deck" width="100%" />
+      <br />
+      <sub><b>View 1 · Inline 6-Dimension Dossier Deck</b><br />Collapsible 2-column encyclopedia: Role/Principles/Anchors + P0/P1 outage simulation + Neighbor jumps + Q&amp;A self-test</sub>
+    </td>
+    <td width="50%" align="center">
       <img src="./docs/assets/08-overview-dossier-modal.png" alt="Fullscreen Dossier Reading Modal" width="100%" />
       <br />
-      <sub><b>View 1 · Fullscreen Dossier Modal</b><br />Smooth `←/→` keyboard & button roaming, expand/collapse interview answers & `Esc` modal close</sub>
+      <sub><b>View 1 · Fullscreen Dossier Modal</b><br />Smooth <code>←/→</code> keyboard &amp; button roaming, expand/collapse interview answers &amp; <code>Esc</code> modal close</sub>
     </td>
+  </tr>
+  <tr>
     <td width="50%" align="center">
       <img src="./docs/assets/02-overview-businessflow.png" alt="Map 3: End-to-End Business Swimlanes" width="100%" />
       <br />
-      <sub><b>Map 3 · End-to-End Business Swimlanes</b><br />Phases × Swimlanes × SLA failure perspective with multi-track filters & multi-view jump buttons</sub>
+      <sub><b>Map 3 · End-to-End Business Swimlanes</b><br />Phases × Swimlanes × SLA failure perspective with multi-track filters &amp; multi-view jump buttons</sub>
+    </td>
+    <td width="50%" align="center">
+      <img src="./docs/assets/03-station-code-notes.png" alt="Station-by-Station Learning Studio: Verbatim Code with Per-line Notes vs Pain Point & Micro-Flow" width="100%" />
+      <br />
+      <sub><b>View 2 · Station-by-Station Studio</b><br />100% per-line annotated source on the left (below / inline / hidden toggles) ↔ STEP 1 Analogy + STEP 2 Micro-Flow</sub>
     </td>
   </tr>
   <tr>
     <td width="50%" align="center">
       <img src="./docs/assets/04-station-io-contract.png" alt="STEP 3 Concrete I/O Data Contracts" width="100%" />
       <br />
-      <sub><b>STEP 3 · Concrete I/O Data Contracts</b><br />Entering struct/parameter tables → core transforms → exiting schema & concrete payloads</sub>
+      <sub><b>STEP 3 · Concrete I/O Data Contracts</b><br />Entering struct/parameter tables → core transforms → exiting schema &amp; concrete payloads</sub>
     </td>
     <td width="50%" align="center">
       <img src="./docs/assets/05-workbench-drilldown.png" alt="Annotated Directory Tree and Module Drill-Down" width="100%" />
@@ -94,7 +106,15 @@
 </table>
 
 <details>
-<summary>🌞 Expand to preview Light Theme v6 fullscreen dossier modal (one-click Dark / Light toggle inside the HTML)</summary>
+<summary>🎯 View 4 · Interview Sprint &amp; Mastery Exam Preview (3-Min Teleprompter + Skip Guide + Exam)</summary>
+<br />
+<div align="center">
+  <img src="./docs/assets/10-interview-exam.png" alt="View 4: 3-Minute Interview Teleprompter, Peripheral Skip Guide, and Mastery Exam" width="100%" />
+</div>
+</details>
+
+<details>
+<summary>🌞 Light Theme v6 Fullscreen Dossier Modal Preview (one-click Dark / Light toggle inside the HTML)</summary>
 <br />
 <div align="center">
   <img src="./docs/assets/06-light-theme.png" alt="Light Theme v6 Fullscreen Dossier Modal Preview" width="100%" />

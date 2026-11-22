@@ -50,8 +50,8 @@
 > **零安装直接试玩**：[**🎮 点击打开 GitHub Pages 在线交互 Demo**](https://frank-zhu2000.github.io/repo-mastery-html/) —— 以开源项目 [`Tencent/WeKnora`](https://github.com/Tencent/WeKnora) 为实景案例生成，展示本 Skill 对任意 GitHub/本地开源仓库（支持 **Web 后端 / 前端框架 / CLI 编译器 / SDK 与 AI 引擎** 等 4 类架构原型及 **18+ 编程语言**）生成的单文件离线 HTML 效果。
 
 <div align="center">
-  <img src="./docs/assets/03-station-code-notes.png" alt="沿链路循序精读：左 100% 逐行中文精注源码 ↔ 右 痛点/类比/微流转图" width="100%" />
-  <p><sub><b>旗舰视图 · 沿链路循序精读：</b>左栏真实源码 100% 逐行中文精注（行下/行尾/隐藏一键切换）↔ 右栏 STEP 1 痛点与 0 基础类比 + STEP 2 微流转图双向高亮 + 线上避坑指南。</sub></p>
+  <img src="./docs/assets/demo-walkthrough.gif" alt="v6 全链路交互式源码学习系统动图演示（三大蓝图 + 6 维导读 + 全屏漫游 + Ctrl+K + 逐行中文源码 + 模块图谱）" width="100%" />
+  <p><sub><b>完整 v6 交互动图实录：</b>三大总览蓝图防误触选中与上下游高亮 → 图下 2 列 & 全屏 6 维导读与面试题自测 → <code>Ctrl+K</code> 全域搜索 → 左 100% 逐行中文源码 ↔ 右 5-STEP 学习工坊 → 目录模块流程图 ↔ 浅色主题切换。</sub></p>
 </div>
 
 <table>
@@ -62,21 +62,33 @@
       <sub><b>图一 · 全链路数据流转与节点联动</b><br />Stage × 主线网格，支持单链聚焦、选中节点上下游连线高亮、无关淡化与绿灯通关同步</sub>
     </td>
     <td width="50%" align="center">
-      <img src="./docs/assets/07-overview-dossier-deck.png" alt="图下常驻 2 列 6 维导读面板" width="100%" />
+      <img src="./docs/assets/09-overview-techarch.png" alt="图二：技术架构边界与爆炸半径视角" width="100%" />
       <br />
-      <sub><b>View 1 · 图下常驻 6 维深度导读</b><br />2 列可收起导读面板：作用/原理/源码锚点 + P0/P1 故障推演 + 上下游胶囊跳转 + 面试题自测</sub>
+      <sub><b>图二 · 技术架构边界与宕机爆炸半径</b><br />组件 × 虚线边界 × 正交连线高亮，聚焦架构分层选型、安全防线与故障波及面</sub>
     </td>
   </tr>
   <tr>
     <td width="50%" align="center">
+      <img src="./docs/assets/07-overview-dossier-deck.png" alt="图下常驻 2 列 6 维导读面板" width="100%" />
+      <br />
+      <sub><b>View 1 · 图下常驻 6 维深度导读</b><br />2 列可收起导读面板：作用/原理/源码锚点 + P0/P1 故障推演 + 上下游胶囊跳转 + 面试题自测</sub>
+    </td>
+    <td width="50%" align="center">
       <img src="./docs/assets/08-overview-dossier-modal.png" alt="全屏深读居中弹层" width="100%" />
       <br />
-      <sub><b>View 1 · 一键全屏深读弹层</b><br />支持 `←/→` 键盘与按钮无跳页漫游、面试题答案一键展开/折叠、`Esc` 退出弹层</sub>
+      <sub><b>View 1 · 一键全屏深读弹层</b><br />支持 <code>←/→</code> 键盘与按钮无跳页漫游、面试题答案一键展开/折叠、<code>Esc</code> 退出弹层</sub>
     </td>
+  </tr>
+  <tr>
     <td width="50%" align="center">
       <img src="./docs/assets/02-overview-businessflow.png" alt="图三：端到端业务流程泳道图" width="100%" />
       <br />
       <sub><b>图三 · 端到端业务流程泳道图</b><br />阶段 × 业务泳道 × SLA 故障视角，支持多轨筛选与主/次站点与模块图谱跳转</sub>
+    </td>
+    <td width="50%" align="center">
+      <img src="./docs/assets/03-station-code-notes.png" alt="沿链路循序精读：左 100% 逐行中文精注源码 ↔ 右 痛点/类比/微流转图" width="100%" />
+      <br />
+      <sub><b>View 2 · 沿链路循序精读工坊</b><br />左栏真实源码 100% 逐行中文精注（行下/行尾/隐藏切换）↔ 右栏 STEP 1 痛点类比 + STEP 2 微流转</sub>
     </td>
   </tr>
   <tr>
@@ -88,13 +100,21 @@
     <td width="50%" align="center">
       <img src="./docs/assets/05-workbench-drilldown.png" alt="目录与模块流程图双向联动" width="100%" />
       <br />
-      <sub><b>视图 3 · 全中文目录树 ↔ 模块流程图</b><br />完整中文注释目录树 1-to-1 下钻模块流程图，双向精准滚动定位</sub>
+      <sub><b>View 3 · 全中文目录树 ↔ 模块流程图</b><br />完整中文注释目录树 1-to-1 下钻模块流程图，支持平移缩放与双向精准滚动定位</sub>
     </td>
   </tr>
 </table>
 
 <details>
-<summary>🌞 点击展开：查看浅色主题 v6 全屏深读实拍效果（支持一键深浅色切换）</summary>
+<summary>🎯 View 4 · 面试总考与避坑实拍（3 分钟提词器 + 红黑榜 + 通关总考）</summary>
+<br />
+<div align="center">
+  <img src="./docs/assets/10-interview-exam.png" alt="View 4：3 分钟项目总述提词器、外围胶水红黑榜与结业总考" width="100%" />
+</div>
+</details>
+
+<details>
+<summary>🌞 浅色主题 v6 全屏深读实拍（支持一键深浅色切换）</summary>
 <br />
 <div align="center">
   <img src="./docs/assets/06-light-theme.png" alt="浅色主题 v6 全屏深读弹层实拍" width="100%" />
