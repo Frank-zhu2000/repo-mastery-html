@@ -2,7 +2,9 @@
 // repo-mastery-html CLI Engine (Node.js >= 20, zero npm dependencies)
 // Subcommands: scan | prepare-notes | verify-notes | verify-dossiers | build | verify-html
 
+import crypto from 'node:crypto';
 import fs from 'node:fs';
+import net from 'node:net';
 import os from 'node:os';
 import path from 'node:path';
 import { execFileSync, spawn } from 'node:child_process';
@@ -624,9 +626,151 @@ async function waitForCdp(port, retries = 40) {
   throw new Error('CDP endpoint did not become ready');
 }
 
+// Zero-dependency RFC 6455 WebSocket client fallback for Node 20.x where global WebSocket is unflagged only in >= 21/22
+class MinimalWebSocket {
+  constructor(wsUrl) {
+    const u = new URL(wsUrl);
+    const host = u.hostname || '127.0.0.1';
+    const port = Number(u.port || (u.protocol === 'wss:' ? 443 : 80));
+    const reqPath = (u.pathname || '/') + (u.search || '');
+    const wsKey = crypto.randomBytes(16).toString('base64');
+    this.listeners = new Map();
+    this.buf = Buffer.alloc(0);
+    this.handshaked = false;
+    this.fragChunks = [];
+    this.closed = false;
+
+    this.sock = net.createConnection({ host, port });
+    this.sock.on('connect', () => {
+      const req = [
+        `GET ${reqPath} HTTP/1.1`,
+        `Host: ${host}:${port}`,
+        'Upgrade: websocket',
+        'Connection: Upgrade',
+        `Sec-WebSocket-Key: ${wsKey}`,
+        'Sec-WebSocket-Version: 13',
+        '',
+        '',
+      ].join('\r\n');
+      this.sock.write(req);
+    });
+    this.sock.on('error', (err) => this._emit('error', err));
+    this.sock.on('data', (chunk) => {
+      this.buf = Buffer.concat([this.buf, chunk]);
+      if (!this.handshaked) {
+        const idx = this.buf.indexOf('\r\n\r\n');
+        if (idx < 0) return;
+        const head = this.buf.subarray(0, idx).toString('utf8');
+        if (!/^HTTP\/1\.[01]\s+101\b/i.test(head)) {
+          this._emit('error', new Error(`WebSocket handshake failed: ${head.split('\r\n')[0]}`));
+          this.close();
+          return;
+        }
+        this.buf = Buffer.from(this.buf.subarray(idx + 4));
+        this.handshaked = true;
+        this._emit('open', {});
+      }
+      this._drainFrames();
+    });
+  }
+  addEventListener(type, fn) {
+    if (!this.listeners.has(type)) this.listeners.set(type, []);
+    this.listeners.get(type).push(fn);
+  }
+  _emit(type, evt) {
+    for (const fn of this.listeners.get(type) || []) fn(evt);
+  }
+  _drainFrames() {
+    while (this.buf.length >= 2) {
+      const b0 = this.buf[0];
+      const b1 = this.buf[1];
+      const fin = (b0 & 0x80) !== 0;
+      const opcode = b0 & 0x0f;
+      const masked = (b1 & 0x80) !== 0;
+      let len = b1 & 0x7f;
+      let offset = 2;
+      if (len === 126) {
+        if (this.buf.length < 4) break;
+        len = this.buf.readUInt16BE(2);
+        offset = 4;
+      } else if (len === 127) {
+        if (this.buf.length < 10) break;
+        len = Number(this.buf.readBigUInt64BE(2));
+        offset = 10;
+      }
+      let mask = null;
+      if (masked) {
+        if (this.buf.length < offset + 4) break;
+        mask = this.buf.subarray(offset, offset + 4);
+        offset += 4;
+      }
+      if (this.buf.length < offset + len) break;
+      const payload = Buffer.from(this.buf.subarray(offset, offset + len));
+      if (mask) for (let i = 0; i < payload.length; i++) payload[i] ^= mask[i & 3];
+      this.buf = Buffer.from(this.buf.subarray(offset + len));
+
+      if (opcode === 0x8) {
+        this.close();
+        return;
+      }
+      if (opcode === 0x9) {
+        this._sendFrame(0x0a, payload);
+        continue;
+      }
+      if (opcode === 0xa) continue;
+      if (opcode === 0x1 || opcode === 0x2) {
+        this.fragChunks = [payload];
+        if (fin) {
+          const full = Buffer.concat(this.fragChunks);
+          this.fragChunks = [];
+          this._emit('message', { data: full.toString('utf8') });
+        }
+      } else if (opcode === 0x0) {
+        this.fragChunks.push(payload);
+        if (fin) {
+          const full = Buffer.concat(this.fragChunks);
+          this.fragChunks = [];
+          this._emit('message', { data: full.toString('utf8') });
+        }
+      }
+    }
+  }
+  _sendFrame(opcode, rawPayload) {
+    if (this.closed) return;
+    const payload = Buffer.isBuffer(rawPayload) ? rawPayload : Buffer.from(String(rawPayload), 'utf8');
+    const len = payload.length;
+    const hdrLen = len < 126 ? 2 : (len <= 65535 ? 4 : 10);
+    const frame = Buffer.allocUnsafe(hdrLen + 4 + len);
+    frame[0] = 0x80 | (opcode & 0x0f);
+    if (len < 126) {
+      frame[1] = 0x80 | len;
+    } else if (len <= 65535) {
+      frame[1] = 0x80 | 126;
+      frame.writeUInt16BE(len, 2);
+    } else {
+      frame[1] = 0x80 | 127;
+      frame.writeBigUInt64BE(BigInt(len), 2);
+    }
+    const mask = crypto.randomBytes(4);
+    mask.copy(frame, hdrLen);
+    for (let i = 0; i < len; i++) frame[hdrLen + 4 + i] = payload[i] ^ mask[i & 3];
+    this.sock.write(frame);
+  }
+  send(data) {
+    this._sendFrame(0x1, Buffer.from(String(data), 'utf8'));
+  }
+  close() {
+    if (this.closed) return;
+    this.closed = true;
+    try { this.sock.end(); this.sock.destroy(); } catch {}
+  }
+}
+
 class CdpClient {
   constructor(wsUrl) {
-    this.ws = new WebSocket(wsUrl);
+    this.ws = (typeof globalThis.WebSocket === 'function' && !process.env.FORCE_MINIMAL_WS)
+      ? new globalThis.WebSocket(wsUrl)
+      : new MinimalWebSocket(wsUrl);
     this.id = 0;
     this.pending = new Map();
     this.consoleErrors = [];
