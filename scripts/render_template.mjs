@@ -1,4 +1,4 @@
-// Generic v5 Single-File Interactive Mastery HTML Renderer
+// Generic v6 Single-File Interactive Mastery HTML Renderer
 // Zero external dependencies. Supports any GitHub repository, any scale, and 11+ languages.
 
 export function renderMasteryHtml(PAYLOAD) {
@@ -11,7 +11,7 @@ export function renderMasteryHtml(PAYLOAD) {
   const badgeText = commit ? `${version} · ${commit}` : version;
   const pageTitle = meta.title || `${projectName} 架构驱动 · 全链路源码学习系统 (${badgeText})`;
   const nav3Label = meta.workbenchNavLabel || `🗂️ 3. 目录与 ${Math.max(1, (PAYLOAD.workbenchModules?.length || 2) - 1)} 模块图谱`;
-  const searchPlaceholder = meta.searchPlaceholder || `搜索 ${PAYLOAD.stations?.length || 0} 站全链路站点、${PAYLOAD.techArch?.components?.length || 0} 个架构组件、${PAYLOAD.businessFlow?.nodes?.length || 0} 个业务节点或源码关键词...`;
+  const searchPlaceholder = meta.searchPlaceholder || `搜索 ${PAYLOAD.stations?.length || 0} 站全链路站点、${PAYLOAD.techArch?.components?.length || 0} 个架构组件、${PAYLOAD.businessFlow?.nodes?.length || 0} 个业务节点、高频考点或源码关键词 (Ctrl+K)...`;
 
   return `<!DOCTYPE html>
 <html lang="zh-CN" data-theme="dark">
@@ -235,6 +235,147 @@ export function renderMasteryHtml(PAYLOAD) {
     display: flex; align-items: center; justify-content: space-between; gap: 12px;
     padding: 10px 16px; background: var(--bg-panel); border-top: 1px solid var(--border); flex-wrap: wrap;
   }
+
+  /* ===== v6 Overview Module Dossier Deck & Fullscreen Modal ===== */
+  .dos-deck { border-top: 1px solid var(--border); background: var(--bg-panel); }
+  .dos-head {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    padding: 11px 16px; background: var(--bg-panel); border-bottom: 1px solid var(--border); flex-wrap: wrap;
+  }
+  .dos-head-left { display: flex; flex-direction: column; gap: 4px; min-width: 0; flex: 1; }
+  .dos-title-row { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+  .dos-mode-badge {
+    font-size: 10.5px; font-weight: 800; padding: 2px 8px; border-radius: 999px;
+    background: var(--accent-soft); color: var(--accent); border: 1px solid var(--accent-ring); white-space: nowrap;
+  }
+  .dos-idx-pill {
+    font-family: ui-monospace, Consolas, monospace; font-size: 10.5px; font-weight: 700;
+    padding: 1px 7px; border-radius: 6px; background: var(--bg-elev); color: var(--text-muted);
+    border: 1px solid var(--border); white-space: nowrap;
+  }
+  .dos-title-txt { font-size: 14px; font-weight: 800; color: var(--text); }
+  .dos-sub-txt { font-size: 11.5px; color: var(--text-muted); }
+  .dos-nav-grp { display: inline-flex; align-items: center; gap: 4px; }
+  .dos-head-actions { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; flex-shrink: 0; }
+  .dos-collapsed-bar {
+    padding: 9px 16px; background: var(--bg-card); font-size: 12px; color: var(--text-muted);
+    display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+  }
+  .dos-collapsed-bar code {
+    font-family: ui-monospace, Consolas, monospace; font-size: 11px;
+    background: var(--bg); padding: 1px 4px; border-radius: 4px; color: var(--accent); border: 1px solid var(--border);
+  }
+  .dos-body {
+    display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px;
+    padding: 14px 16px 16px; background: var(--bg-card);
+  }
+  .dos-card {
+    background: var(--bg-panel); border: 1px solid var(--border); border-radius: 11px;
+    padding: 12px 14px; display: flex; flex-direction: column; gap: 9px; min-width: 0;
+  }
+  .dos-card.full { grid-column: 1 / -1; }
+  .dos-card-head {
+    display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap;
+    padding-bottom: 6px; border-bottom: 1px solid var(--border);
+  }
+  .dos-card-title { font-size: 12.5px; font-weight: 800; color: var(--text); display: flex; align-items: center; gap: 6px; }
+  .dos-card-sub { font-size: 11px; color: var(--text-dim); }
+  .dos-deck code, .dos-modal-box code {
+    font-family: ui-monospace, Consolas, monospace; font-size: 11px;
+    background: var(--bg); padding: 1px 4px; border-radius: 4px; color: var(--accent); border: 1px solid var(--border);
+  }
+  .dos-role-box {
+    background: var(--bg-elev); border: 1px solid var(--border); border-left: 3px solid var(--accent);
+    border-radius: 8px; padding: 8px 11px; font-size: 12.2px; line-height: 1.56; color: var(--text);
+  }
+  .dos-why-box {
+    background: var(--bg-elev); border: 1px solid var(--border); border-left: 3px solid var(--accent-2);
+    border-radius: 8px; padding: 8px 11px; font-size: 12px; line-height: 1.55; color: var(--text-muted);
+  }
+  .dos-sub-lbl { font-size: 11px; font-weight: 800; color: var(--text-muted); margin-bottom: 3px; }
+  .dos-problem-list { margin: 0; padding-left: 17px; font-size: 12px; line-height: 1.54; color: var(--text); }
+  .dos-problem-list li { margin-bottom: 4px; }
+  .dos-prin-item {
+    background: var(--bg-elev); border: 1px solid var(--border); border-radius: 8px;
+    padding: 8px 10px; display: flex; flex-direction: column; gap: 4px;
+  }
+  .dos-prin-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+  .dos-prin-title { font-size: 12px; font-weight: 700; color: var(--text); }
+  .dos-anchor-badge {
+    font-family: ui-monospace, Consolas, monospace; font-size: 10.5px; padding: 1px 6px; border-radius: 5px;
+    background: var(--accent-soft); color: var(--accent); border: 1px solid var(--accent-ring);
+    max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .dos-prin-detail { font-size: 11.8px; color: var(--text-muted); line-height: 1.52; }
+  .dos-incident {
+    background: var(--bg-elev); border: 1px solid var(--border); border-radius: 9px;
+    padding: 9px 11px; display: flex; flex-direction: column; gap: 5px;
+  }
+  .dos-incident.sev-p0 { border-left: 3px solid var(--rose); }
+  .dos-incident.sev-p1 { border-left: 3px solid var(--amber); }
+  .dos-sev-badge {
+    display: inline-flex; align-items: center; gap: 4px; padding: 1px 7px; border-radius: 999px;
+    font-family: ui-monospace, Consolas, monospace; font-size: 10.5px; font-weight: 800;
+  }
+  .dos-sev-badge.p0 { background: var(--rose-soft); color: var(--rose); border: 1px solid rgba(251,113,133,0.42); }
+  .dos-sev-badge.p1 { background: var(--amber-soft); color: var(--amber); border: 1px solid rgba(251,191,36,0.42); }
+  .dos-inc-line { font-size: 11.8px; line-height: 1.5; color: var(--text); }
+  .dos-inc-tag { font-weight: 800; color: var(--text-muted); margin-right: 4px; }
+  .dos-neighbors-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+  .dos-nb-lbl { font-size: 11px; font-weight: 700; color: var(--text-muted); white-space: nowrap; }
+  .dos-neighbor-chip {
+    display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 999px;
+    border: 1px solid var(--border-strong); background: var(--bg-elev); color: var(--text);
+    font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.14s;
+  }
+  .dos-neighbor-chip:hover { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
+  .dos-neighbor-chip .nb-edge { font-size: 10px; color: var(--text-dim); }
+  .dos-neighbor-chip:hover .nb-edge { color: var(--accent); }
+  .dos-io-box {
+    background: var(--bg-elev); border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px;
+  }
+  .dos-io-box.in { border-left: 3px solid var(--accent); }
+  .dos-io-box.out { border-left: 3px solid var(--emerald); }
+  .dos-io-sum { font-size: 11.8px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+  .dos-io-tbl { width: 100%; border-collapse: collapse; font-size: 11.3px; }
+  .dos-io-tbl th, .dos-io-tbl td { padding: 4px 6px; border-top: 1px solid var(--border); text-align: left; vertical-align: top; }
+  .dos-io-tbl th { border-top: none; color: var(--text-dim); font-size: 10.3px; background: var(--bg-panel); }
+  .dos-io-transform {
+    background: var(--accent-soft); border: 1px dashed var(--accent-ring); border-radius: 8px;
+    padding: 7px 10px; font-size: 11.7px; color: var(--text); line-height: 1.5;
+  }
+  .dos-tag-row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .dos-exam-tag {
+    display: inline-flex; align-items: center; padding: 2px 9px; border-radius: 999px;
+    font-size: 11px; font-weight: 700; background: var(--emerald-soft); color: var(--emerald);
+    border: 1px solid rgba(52,211,153,0.38);
+  }
+  .dos-qa-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .dos-qa-item {
+    background: var(--bg-elev); border: 1px solid var(--border); border-radius: 9px;
+    padding: 10px 12px; display: flex; flex-direction: column; gap: 7px;
+  }
+  .dos-qa-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+  .dos-qa-focus { font-size: 11px; color: var(--amber); font-weight: 700; }
+  .dos-qa-q { font-size: 12.4px; font-weight: 700; color: var(--text); line-height: 1.5; }
+  .dos-qa-ans {
+    display: none; padding: 8px 10px; border-radius: 7px; background: var(--bg-panel);
+    border-left: 3px solid var(--emerald); font-size: 12px; color: var(--text-muted); line-height: 1.58;
+  }
+  .dos-qa-ans.open { display: block; }
+
+  /* Fullscreen Module Dossier Modal */
+  .dos-modal {
+    position: fixed; inset: 0; z-index: 210; display: none; align-items: center; justify-content: center;
+    padding: 20px; background: rgba(4, 8, 16, 0.68); backdrop-filter: blur(4px);
+  }
+  .dos-modal.open { display: flex; }
+  .dos-modal-box {
+    width: 1140px; max-width: 94vw; max-height: 88vh; display: flex; flex-direction: column;
+    border-radius: 14px; overflow: hidden; border: 1px solid var(--border-strong);
+    background: var(--bg-card); box-shadow: 0 24px 64px rgba(0, 0, 0, 0.55);
+  }
+  .dos-modal-scroll { flex: 1; min-height: 0; overflow-y: auto; }
 
   /* Blueprint SVG styles */
   .stage-band-bg { fill: var(--bg-elev); fill-opacity: 0.45; stroke: var(--border); stroke-width: 1; rx: 8; }
@@ -659,7 +800,7 @@ export function renderMasteryHtml(PAYLOAD) {
   .search-item:hover { background: var(--bg-hover); }
 
   @media (max-width: 980px) {
-    .station-context, .exp-grid, .pitch-grid, .wb-ins-grid { grid-template-columns: 1fr; }
+    .station-context, .exp-grid, .pitch-grid, .wb-ins-grid, .dos-body, .dos-qa-grid { grid-template-columns: 1fr; }
     .station-split, .wb-split { flex-direction: column; }
     .st-left, .wb-pane-code { width: 100% !important; height: 45%; border-right: none; border-bottom: 1px solid var(--border); }
     .splitter { display: none; }
@@ -787,6 +928,11 @@ export function renderMasteryHtml(PAYLOAD) {
   </div>
 </div>
 
+<!-- Overview Module Fullscreen Dossier Modal -->
+<div class="dos-modal" id="dossierModal">
+  <div class="dos-modal-box" id="dossierModalBox"></div>
+</div>
+
 <script>
 const DATA = ${payloadJSON};
 const WB_MODULES = DATA.workbenchModules || [];
@@ -824,6 +970,9 @@ const ui = {
   selectedTechCompId: (DATA.techArch?.components?.[0]?.id) || '',
   selectedDfStationId: FIRST_STATION_ID,
   selectedBizNodeId: (DATA.businessFlow?.nodes?.[0]?.id) || '',
+  dossierCollapsed: false,
+  dossierModalOpen: false,
+  dossierOpenAns: {},
   activeStepId: null,
   activeFileId: null,
   noteMode: 'below', // below | inline | off
@@ -849,7 +998,7 @@ function textUnits(s) {
   let u = 0; for (const ch of s) u += ch.charCodeAt(0) > 127 ? 1.85 : 1.0; return u;
 }
 
-// ===== Shared Multi-language Syntax Highlighter (11+ Languages) =====
+// ===== Shared Multi-language Syntax Highlighter (18+ Languages + Plain Fallback) =====
 const GO_KW = new Set(['package','import','func','return','if','else','for','range','switch','case','default','type','struct','interface','map','chan','go','defer','select','break','continue','const','var']);
 const GO_TY = new Set(['string','int','int64','uint64','float64','bool','byte','rune','error','any','nil','true','false']);
 const PY_KW = new Set(['def','class','return','if','elif','else','for','in','while','try','except','finally','with','as','import','from','yield','raise','pass','and','or','not','is','lambda','async','await','match','case']);
@@ -862,6 +1011,16 @@ const JAVA_KW = new Set(['package','import','public','private','protected','clas
 const JAVA_TY = new Set(['String','int','long','double','float','boolean','byte','char','Integer','Long','Boolean','List','Map','Set','Optional','Object','null','true','false']);
 const CPP_KW = new Set(['include','define','namespace','using','class','struct','public','private','protected','template','typename','virtual','override','const','constexpr','auto','return','if','else','for','while','switch','case','default','new','delete','try','catch','throw','sizeof','static','extern','inline','enum']);
 const CPP_TY = new Set(['void','int','long','double','float','bool','char','size_t','uint32_t','uint64_t','int64_t','std','string','vector','map','unique_ptr','shared_ptr','nullptr','true','false']);
+const RB_KW = new Set(['def','class','module','end','do','if','elsif','else','unless','case','when','while','until','for','in','return','yield','begin','rescue','ensure','raise','require','require_relative','include','extend','attr_reader','attr_accessor','attr_writer','self','super','and','or','not','then']);
+const RB_TY = new Set(['nil','true','false','String','Integer','Float','Array','Hash','Symbol','Object']);
+const PHP_KW = new Set(['namespace','use','class','interface','trait','extends','implements','public','private','protected','static','final','abstract','function','fn','return','if','elseif','else','foreach','for','while','switch','case','default','match','new','try','catch','finally','throw','const','echo','as','yield']);
+const PHP_TY = new Set(['string','int','float','bool','array','object','mixed','void','null','true','false','self','parent']);
+const CS_KW = new Set(['namespace','using','public','private','protected','internal','class','struct','record','interface','enum','static','readonly','const','sealed','abstract','virtual','override','async','await','return','if','else','for','foreach','in','while','switch','case','default','new','try','catch','finally','throw','var','get','set','init','this','base']);
+const CS_TY = new Set(['void','string','int','long','double','float','decimal','bool','byte','char','object','Task','List','Dictionary','IEnumerable','null','true','false']);
+const SWIFT_KW = new Set(['import','struct','class','enum','protocol','extension','actor','func','init','deinit','let','var','public','private','fileprivate','internal','open','static','final','override','async','await','throws','rethrows','try','catch','throw','return','if','else','guard','for','in','while','switch','case','default','where','self','Self','super','typealias']);
+const SWIFT_TY = new Set(['String','Int','Double','Float','Bool','Array','Dictionary','Set','Optional','Result','Void','Any','nil','true','false']);
+const PROTO_KW = new Set(['syntax','edition','package','import','public','option','message','enum','service','rpc','returns','stream','oneof','map','repeated','optional','required','reserved','extensions','extend','to','max']);
+const PROTO_TY = new Set(['string','bytes','bool','int32','int64','uint32','uint64','sint32','sint64','fixed32','fixed64','float','double','google']);
 const SH_KW = new Set(['if','then','else','elif','fi','for','do','done','while','case','esac','in','function','return','export','local','set','exit','echo','cd','trap']);
 const SH_TY = new Set(['true','false']);
 const SQL_KW = new Set(['CREATE','TABLE','IF','NOT','EXISTS','PRIMARY','KEY','NULL','DEFAULT','UNIQUE','INDEX','ON','WHERE','IS','AND','OR','SELECT','FROM','JOIN','LEFT','INNER','ORDER','BY','GROUP','HAVING','CASE','WHEN','THEN','ELSE','END','LIMIT','INSERT','INTO','VALUES','UPDATE','SET','DELETE','ALTER','ADD','COLUMN','CONCURRENTLY','USING']);
@@ -920,18 +1079,110 @@ function highlightTree(raw) {
   else bodyHtml = '<span class="tree-file">' + escapeHtml(body) + '</span>';
   return '<span class="tree-branch">' + escapeHtml(branch) + '</span>' + bodyHtml + (comment ? '<span class="tree-cmt">' + escapeHtml(comment) + '</span>' : '');
 }
+function highlightMarkup(raw) {
+  let out = '', i = 0, n = raw.length;
+  while (i < n) {
+    if (raw.startsWith('<!--', i)) {
+      const end = raw.indexOf('-->', i + 4);
+      const j = end >= 0 ? end + 3 : n;
+      out += '<span class="syn-cmt">' + escapeHtml(raw.slice(i, j)) + '</span>';
+      i = j; continue;
+    }
+    if (raw[i] === '<') {
+      let j = i + 1;
+      if (raw[j] === '/') j++;
+      let t = j;
+      while (t < n && /[A-Za-z0-9_:-]/.test(raw[t])) t++;
+      out += escapeHtml(raw.slice(i, j)) + (t > j ? '<span class="syn-kw">' + escapeHtml(raw.slice(j, t)) + '</span>' : '');
+      i = t;
+      while (i < n && raw[i] !== '>') {
+        if (raw[i] === '"' || raw[i] === "'") {
+          const q = raw[i]; let k = i + 1;
+          while (k < n && raw[k] !== q) k++;
+          if (k < n) k++;
+          out += '<span class="syn-str">' + escapeHtml(raw.slice(i, k)) + '</span>';
+          i = k; continue;
+        }
+        if (/[A-Za-z_@:.]/.test(raw[i])) {
+          let k = i; while (k < n && /[A-Za-z0-9_@:.-]/.test(raw[k])) k++;
+          out += '<span class="syn-ty">' + escapeHtml(raw.slice(i, k)) + '</span>';
+          i = k; continue;
+        }
+        out += escapeHtml(raw[i]); i++;
+      }
+      if (i < n && raw[i] === '>') { out += escapeHtml('>'); i++; }
+      continue;
+    }
+    out += escapeHtml(raw[i]); i++;
+  }
+  return out || ' ';
+}
+function highlightCss(raw) {
+  let out = '', i = 0, n = raw.length;
+  while (i < n) {
+    if (raw[i] === '/' && raw[i + 1] === '*') {
+      const end = raw.indexOf('*/', i + 2);
+      const j = end >= 0 ? end + 2 : n;
+      out += '<span class="syn-cmt">' + escapeHtml(raw.slice(i, j)) + '</span>';
+      i = j; continue;
+    }
+    if (raw[i] === '/' && raw[i + 1] === '/') {
+      out += '<span class="syn-cmt">' + escapeHtml(raw.slice(i)) + '</span>';
+      break;
+    }
+    if (raw[i] === '"' || raw[i] === "'") {
+      const q = raw[i]; let j = i + 1;
+      while (j < n && raw[j] !== q) j++;
+      if (j < n) j++;
+      out += '<span class="syn-str">' + escapeHtml(raw.slice(i, j)) + '</span>';
+      i = j; continue;
+    }
+    if (raw[i] === '@' || raw[i] === '.') {
+      let j = i + 1; while (j < n && /[A-Za-z0-9_-]/.test(raw[j])) j++;
+      out += '<span class="' + (raw[i] === '@' ? 'syn-kw' : 'syn-fn') + '">' + escapeHtml(raw.slice(i, j)) + '</span>';
+      i = j; continue;
+    }
+    if (raw[i] === '#' && /[0-9a-fA-F]/.test(raw[i + 1] || '')) {
+      let j = i + 1; while (j < n && /[0-9a-fA-F]/.test(raw[j])) j++;
+      out += '<span class="syn-num">' + escapeHtml(raw.slice(i, j)) + '</span>';
+      i = j; continue;
+    }
+    if (/[0-9]/.test(raw[i]) && (i === 0 || !/[A-Za-z_-]/.test(raw[i - 1]))) {
+      let j = i; while (j < n && /[0-9.%a-zA-Z]/.test(raw[j])) j++;
+      out += '<span class="syn-num">' + escapeHtml(raw.slice(i, j)) + '</span>';
+      i = j; continue;
+    }
+    if (/[A-Za-z-]/.test(raw[i])) {
+      let j = i; while (j < n && /[A-Za-z0-9_-]/.test(raw[j])) j++;
+      const w = raw.slice(i, j);
+      if (raw[j] === ':') out += '<span class="syn-ty">' + escapeHtml(w) + '</span>';
+      else out += escapeHtml(w);
+      i = j; continue;
+    }
+    out += escapeHtml(raw[i]); i++;
+  }
+  return out || ' ';
+}
 function highlightLine(raw, syntax) {
-  const s = (syntax || 'go').toLowerCase();
+  const s = (syntax || 'plain').toLowerCase();
   if (s === 'tree') return highlightTree(raw);
+  if (s === 'go' || s === 'golang') return highlightGeneric(raw, '//', null, GO_KW, GO_TY, true, false);
   if (s === 'py' || s === 'python') return highlightGeneric(raw, null, '#', PY_KW, PY_TY, false, false);
-  if (s === 'ts' || s === 'tsx' || s === 'js' || s === 'jsx' || s === 'mjs' || s === 'json') return highlightGeneric(raw, '//', null, TS_KW, TS_TY, true, false);
+  if (s === 'ts' || s === 'tsx' || s === 'js' || s === 'jsx' || s === 'mjs' || s === 'cjs' || s === 'json') return highlightGeneric(raw, '//', null, TS_KW, TS_TY, true, false);
   if (s === 'rs' || s === 'rust') return highlightGeneric(raw, '//', null, RS_KW, RS_TY, false, false);
   if (s === 'java' || s === 'kt' || s === 'kotlin') return highlightGeneric(raw, '//', null, JAVA_KW, JAVA_TY, false, false);
-  if (s === 'cpp' || s === 'c' || s === 'cc' || s === 'h' || s === 'hpp') return highlightGeneric(raw, '//', null, CPP_KW, CPP_TY, false, false);
-  if (s === 'sh' || s === 'bash' || s === 'zsh' || s === 'dockerfile' || s === 'toml') return highlightGeneric(raw, null, '#', SH_KW, SH_TY, true, false);
+  if (s === 'cpp' || s === 'c' || s === 'cc' || s === 'cxx' || s === 'h' || s === 'hpp') return highlightGeneric(raw, '//', null, CPP_KW, CPP_TY, false, false);
+  if (s === 'rb' || s === 'ruby') return highlightGeneric(raw, null, '#', RB_KW, RB_TY, false, false);
+  if (s === 'php') return highlightGeneric(raw, '//', '#', PHP_KW, PHP_TY, false, false);
+  if (s === 'cs' || s === 'csharp') return highlightGeneric(raw, '//', null, CS_KW, CS_TY, false, false);
+  if (s === 'swift') return highlightGeneric(raw, '//', null, SWIFT_KW, SWIFT_TY, false, false);
+  if (s === 'proto' || s === 'protobuf') return highlightGeneric(raw, '//', null, PROTO_KW, PROTO_TY, false, false);
+  if (s === 'html' || s === 'xml' || s === 'vue' || s === 'svelte') return highlightMarkup(raw);
+  if (s === 'css' || s === 'scss' || s === 'less') return highlightCss(raw);
+  if (s === 'sh' || s === 'bash' || s === 'zsh' || s === 'dockerfile' || s === 'toml' || s === 'makefile') return highlightGeneric(raw, null, '#', SH_KW, SH_TY, true, false);
   if (s === 'sql') return highlightGeneric(raw, '--', null, SQL_KW, SQL_TY, false, true);
   if (s === 'yaml' || s === 'yml') return highlightYaml(raw);
-  return highlightGeneric(raw, '//', null, GO_KW, GO_TY, true, false);
+  return escapeHtml(raw) || ' ';
 }
 
 // ===== Helpers =====
@@ -966,6 +1217,7 @@ function toggleStationDone(stationId, force) {
 
 function setView(v) {
   wbStopPlay();
+  if (v !== 'overview' && ui.dossierModalOpen) closeDossierModal();
   ui.view = v;
   document.querySelectorAll('.nav-tab').forEach(b => b.classList.toggle('active', b.dataset.view === v));
   const map = { overview: 'viewOverview', station: 'viewStation', workbench: 'viewWorkbench', interview: 'viewInterview' };
@@ -993,8 +1245,9 @@ function openStation(stationId) {
 }
 
 function openWorkbenchAt(moduleId, nodeId) {
+  if (!WB_MODULES.length) return;
   setView('workbench');
-  wbJumpToModuleNode(moduleId || 'dir_tree', nodeId);
+  wbJumpToModuleNode(moduleId || WB_MODULES[0].id, nodeId);
 }
 
 // =========================================================================
@@ -1027,10 +1280,23 @@ function buildDataflowBlueprintSvg() {
       <text class="stage-band-tx" x="\${colX[idx] + nodeW / 2}" y="32">\${escapeHtml(sg.label)}</text>\`;
   });
 
-  // Flow edges from dataflow candidate.json
+  // Flow edges (with adjacent highlighting for selected node)
   const filterFlow = ui.flowFilter;
+  const selSt = getStation(ui.selectedDfStationId);
+  const selDfId = selSt ? selSt.dfNodeId : null;
+  const relDfNodes = new Set(selDfId ? [selDfId] : []);
+  const relDfEdges = new Set();
+  (DATA.dataFlow?.flows || []).forEach((fl, idx) => {
+    const ek = fl.id ?? idx;
+    if (selDfId && (fl.from === selDfId || fl.to === selDfId)) {
+      relDfEdges.add(ek);
+      relDfNodes.add(fl.from);
+      relDfNodes.add(fl.to);
+    }
+  });
+
   let edgesMarkup = '';
-  DATA.dataFlow.flows.forEach((fl, idx) => {
+  (DATA.dataFlow?.flows || []).forEach((fl, idx) => {
     const srcSt = byDfId[fl.from], dstSt = byDfId[fl.to];
     if (!srcSt || !dstSt) return;
     const sx = colX[srcSt.stage] + nodeW, sy = rowY[srcSt.row] + nodeH / 2;
@@ -1038,23 +1304,27 @@ function buildDataflowBlueprintSvg() {
     const midX = (sx + tx) / 2;
     const d = sy === ty ? \`M\${sx} \${sy} L\${tx} \${ty}\` : \`M\${sx} \${sy} L\${midX} \${sy} L\${midX} \${ty} L\${tx} \${ty}\`;
     const variant = fl.variant || 'default';
+    const ek = fl.id ?? idx;
     const matchFilter = filterFlow === 'all' || (srcSt.flowId === filterFlow && dstSt.flowId === filterFlow);
+    const isAct = filterFlow === 'all' ? relDfEdges.has(ek) : (matchFilter && relDfEdges.has(ek));
+    const isDim = filterFlow === 'all' ? (Boolean(selDfId) && !isAct) : !matchFilter;
+    const showDot = filterFlow === 'all' ? (selDfId ? isAct : true) : matchFilter;
     const pid = \`dfp-\${idx}\`;
     const dotCls = variant === 'security' ? 'flow-dot security' : (variant === 'dashed' ? 'flow-dot dashed' : 'flow-dot');
-    edgesMarkup += \`<g class="arch-edge variant-\${variant} \${matchFilter ? '' : 'dimmed'}">
+    edgesMarkup += \`<g class="arch-edge variant-\${variant} \${isAct ? 'active' : ''} \${isDim ? 'dimmed' : ''}">
       <path id="\${pid}" class="edge-path" d="\${d}" marker-end="url(#df-arr-\${variant})" />
-      \${matchFilter ? \`<circle class="\${dotCls}" r="2.8"><animateMotion dur="\${(2.2 + (idx % 3) * 0.4).toFixed(1)}s" repeatCount="indefinite"><mpath href="#\${pid}" /></animateMotion></circle>\` : ''}
+      \${showDot ? \`<circle class="\${dotCls}" r="2.8"><animateMotion dur="\${(2.2 + (idx % 3) * 0.4).toFixed(1)}s" repeatCount="indefinite"><mpath href="#\${pid}" /></animateMotion></circle>\` : ''}
     </g>\`;
   });
 
-  // 15 Station Nodes
+  // Station Nodes
   let nodesMarkup = '';
   DATA.stations.forEach((st) => {
     const x = colX[st.stage], y = rowY[st.row];
     const v = TYPE_VAR[st.nodeType] || 'backend';
     const done = isDone(st.id);
     const isAct = st.id === ui.selectedDfStationId;
-    const dimmed = filterFlow !== 'all' && st.flowId !== filterFlow;
+    const dimmed = filterFlow === 'all' ? (Boolean(selDfId) && !relDfNodes.has(st.dfNodeId)) : (st.flowId !== filterFlow);
     const tagW = Math.max(46, Math.round(textUnits(st.dfTag) * 5.6 + 10));
     const tagX = nodeW - tagW - 8;
 
@@ -1066,7 +1336,7 @@ function buildDataflowBlueprintSvg() {
       <text class="node-step-badge" x="22" y="21.5" text-anchor="middle" fill="#080d16">\${done ? '✓' : st.codeLabel}</text>
       <text class="node-title" x="41" y="23" fill="var(--c-\${v}-tx)">\${escapeHtml(st.dfLabel)}</text>
       <text class="node-sub" x="10" y="45" fill="var(--c-\${v}-tx)">\${escapeHtml(st.dfSublabel)}</text>
-      <text class="node-src-chip" x="10" y="68" fill="var(--c-\${v}-bd)">点击精读 →</text>
+      <text class="node-src-chip" x="10" y="68" fill="var(--c-\${v}-bd)">单击看详解</text>
       <rect class="node-tag-bg" x="\${tagX}" y="57" width="\${tagW}" height="16" rx="8" fill="var(--c-\${v}-bd)" />
       <text class="node-tag-tx" x="\${tagX + tagW / 2}" y="68" text-anchor="middle" fill="var(--c-\${v}-tx)">\${escapeHtml(st.dfTag)}</text>
     </g>\`;
@@ -1125,9 +1395,10 @@ function buildTechArchBlueprintSvg() {
   const selId = ui.selectedTechCompId;
   const relComps = new Set([selId]);
   const relConns = new Set();
-  (DATA.techArch.connections || []).forEach(cn => {
+  (DATA.techArch.connections || []).forEach((cn, idx) => {
+    const ek = cn.id ?? idx;
     if (cn.from === selId || cn.to === selId) {
-      relConns.add(cn.id); relComps.add(cn.from); relComps.add(cn.to);
+      relConns.add(ek); relComps.add(cn.from); relComps.add(cn.to);
     }
   });
 
@@ -1165,7 +1436,7 @@ function buildTechArchBlueprintSvg() {
       lx = (sx + tx) / 2; ly = midY;
     }
     const variant = cn.variant || 'default';
-    const act = relConns.has(cn.id);
+    const act = relConns.has(cn.id ?? idx);
     const dim = selId && !act;
     const lw = Math.max(44, Math.round(textUnits(cn.label || '') * 5.6 + 10));
     const pid = \`tap-\${idx}\`;
@@ -1298,9 +1569,10 @@ function buildBusinessFlowBlueprintSvg() {
   };
   const relNodes = new Set([selId]);
   const relEdges = new Set();
-  (bf.edges || []).forEach((e) => {
+  (bf.edges || []).forEach((e, idx) => {
+    const ek = e.id ?? idx;
     if (e.from === selId || e.to === selId) {
-      relEdges.add(e.id); relNodes.add(e.from); relNodes.add(e.to);
+      relEdges.add(ek); relNodes.add(e.from); relNodes.add(e.to);
     }
   });
 
@@ -1355,9 +1627,10 @@ function buildBusinessFlowBlueprintSvg() {
     const geom = routeBizEdge(e);
     if (!geom) return;
     const variant = e.variant || 'default';
+    const ek = e.id ?? idx;
     const trackOk = track === 'all' || (trackMatchNode(e.from) && trackMatchNode(e.to));
-    const isAct = track === 'all' ? relEdges.has(e.id) : trackOk;
-    const isDim = track === 'all' ? (selId && !relEdges.has(e.id)) : !trackOk;
+    const isAct = track === 'all' ? relEdges.has(ek) : trackOk;
+    const isDim = track === 'all' ? (selId && !relEdges.has(ek)) : !trackOk;
     const dispLabel = (e.label || '').replace(/\\s+/g, '');
     const lw = Math.max(40, Math.round(textUnits(dispLabel) * 5.0 + 9));
     const pid = \`wfp-\${idx}\`;
@@ -1398,6 +1671,437 @@ function buildBusinessFlowBlueprintSvg() {
   return \`<svg class="bp-svg" id="businessFlowSvg" viewBox="0 0 \${vbW} \${vbH}" xmlns="http://www.w3.org/2000/svg">\${defs}\${phasesMarkup}\${lanesMarkup}\${groupsMarkup}\${edgesMarkup}\${nodesMarkup}</svg>\`;
 }
 
+function getActiveOverviewContext() {
+  if (ui.blueprintMode === 'dataflow') {
+    const list = getOrderedStations();
+    if (!list.length) return null;
+    const st = getStation(ui.selectedDfStationId);
+    const index = Math.max(0, list.findIndex(x => x.id === st.id));
+    const prevId = list[(index - 1 + list.length) % list.length].id;
+    const nextId = list[(index + 1) % list.length].id;
+    const byDfId = {};
+    (DATA.stations || []).forEach(s => { byDfId[s.dfNodeId] = s; });
+    const upstream = (DATA.dataFlow?.flows || [])
+      .filter(fl => fl.to === st.dfNodeId)
+      .map(fl => {
+        const src = byDfId[fl.from];
+        return src ? { id: src.id, label: \`\${src.codeLabel} · \${src.dfLabel}\`, edgeLabel: fl.label || '' } : null;
+      })
+      .filter(Boolean);
+    const downstream = (DATA.dataFlow?.flows || [])
+      .filter(fl => fl.from === st.dfNodeId)
+      .map(fl => {
+        const dst = byDfId[fl.to];
+        return dst ? { id: dst.id, label: \`\${dst.codeLabel} · \${dst.dfLabel}\`, edgeLabel: fl.label || '' } : null;
+      })
+      .filter(Boolean);
+    const sources = (st.files || []).map(f => ({ path: f.path, line: f.sliceStart, end_line: f.sliceEnd, label: f.label }));
+    const titleParts = String(st.title || '').split('：');
+    const titleTail = titleParts.length > 1 ? titleParts.slice(1).join('：') : st.title;
+    const title = titleTail && titleTail !== st.dfLabel ? \`\${st.dfLabel}（\${titleTail}）\` : st.dfLabel;
+    return {
+      mode: 'dataflow',
+      id: st.id,
+      index,
+      total: list.length,
+      prevId,
+      nextId,
+      title,
+      sublabel: st.dfSublabel || '',
+      badge: \`🌊 图一 · 第 \${st.codeLabel} 站\`,
+      sources,
+      station: st,
+      altStation: null,
+      wbModuleId: st.wbTarget ? st.wbTarget.moduleId : null,
+      wbNodeId: st.wbTarget ? st.wbTarget.nodeId : null,
+      dossier: DATA.overviewDossiers?.dataflow?.[st.id] || null,
+      upstream,
+      downstream,
+    };
+  }
+  if (ui.blueprintMode === 'techarch') {
+    const list = DATA.techArch?.components || [];
+    if (!list.length) return null;
+    const comp = list.find(c => c.id === ui.selectedTechCompId) || list[0];
+    const index = Math.max(0, list.findIndex(c => c.id === comp.id));
+    const prevId = list[(index - 1 + list.length) % list.length].id;
+    const nextId = list[(index + 1) % list.length].id;
+    const byCompId = {};
+    list.forEach(c => { byCompId[c.id] = c; });
+    const upstream = (DATA.techArch?.connections || [])
+      .filter(cn => cn.to === comp.id)
+      .map(cn => {
+        const src = byCompId[cn.from];
+        return src ? { id: src.id, label: src.label, edgeLabel: cn.label || '' } : null;
+      })
+      .filter(Boolean);
+    const downstream = (DATA.techArch?.connections || [])
+      .filter(cn => cn.from === comp.id)
+      .map(cn => {
+        const dst = byCompId[cn.to];
+        return dst ? { id: dst.id, label: dst.label, edgeLabel: cn.label || '' } : null;
+      })
+      .filter(Boolean);
+    const info = (DATA.techArch?.compToStation || {})[comp.id];
+    const st = info ? getStation(info.stationId) : null;
+    return {
+      mode: 'techarch',
+      id: comp.id,
+      index,
+      total: list.length,
+      prevId,
+      nextId,
+      title: comp.label,
+      sublabel: comp.sublabel || '',
+      badge: \`🏛️ 图二 · \${comp.tag || '架构组件'}\`,
+      sources: comp.sources || [],
+      station: st,
+      altStation: null,
+      wbModuleId: st && st.wbTarget ? st.wbTarget.moduleId : null,
+      wbNodeId: st && st.wbTarget ? st.wbTarget.nodeId : null,
+      dossier: DATA.overviewDossiers?.techarch?.[comp.id] || null,
+      upstream,
+      downstream,
+    };
+  }
+  const bf = DATA.businessFlow || {};
+  const list = bf.nodes || [];
+  if (!list.length) return null;
+  const node = list.find(n => n.id === ui.selectedBizNodeId) || list[0];
+  const index = Math.max(0, list.findIndex(n => n.id === node.id));
+  const prevId = list[(index - 1 + list.length) % list.length].id;
+  const nextId = list[(index + 1) % list.length].id;
+  const byNodeId = {};
+  list.forEach(n => { byNodeId[n.id] = n; });
+  const upstream = (bf.edges || [])
+    .filter(e => e.to === node.id)
+    .map(e => {
+      const src = byNodeId[e.from];
+      return src ? { id: src.id, label: src.label, edgeLabel: e.label || '' } : null;
+    })
+    .filter(Boolean);
+  const downstream = (bf.edges || [])
+    .filter(e => e.from === node.id)
+    .map(e => {
+      const dst = byNodeId[e.to];
+      return dst ? { id: dst.id, label: dst.label, edgeLabel: e.label || '' } : null;
+    })
+    .filter(Boolean);
+  const lane = (bf.lanes || []).find(l => l.id === node.lane);
+  const info = (bf.nodeToLearn || {})[node.id];
+  const st = info ? getStation(info.stationId) : null;
+  const altSt = info && info.altStationId ? getStation(info.altStationId) : null;
+  return {
+    mode: 'businessflow',
+    id: node.id,
+    index,
+    total: list.length,
+    prevId,
+    nextId,
+    title: node.label,
+    sublabel: node.sublabel || '',
+    badge: \`🧭 图三 · \${lane ? lane.label : '业务节点'}\`,
+    sources: node.sources || [],
+    station: st,
+    altStation: altSt,
+    wbModuleId: info ? info.wbModuleId : null,
+    wbNodeId: null,
+    dossier: DATA.overviewDossiers?.businessflow?.[node.id] || null,
+    upstream,
+    downstream,
+  };
+}
+
+function selectOverviewModule(mode, id, opts = {}) {
+  ui.blueprintMode = mode;
+  if (mode === 'dataflow') {
+    ui.selectedDfStationId = id;
+    if (ui.flowFilter !== 'all') {
+      const st = getStation(id);
+      if (st && st.flowId !== ui.flowFilter) ui.flowFilter = 'all';
+    }
+  } else if (mode === 'techarch') {
+    ui.selectedTechCompId = id;
+  } else {
+    ui.selectedBizNodeId = id;
+    if (ui.bizFilter !== 'all') {
+      const bf = DATA.businessFlow || {};
+      const mainSet = new Set(bf.mainPath || []);
+      const info = (bf.nodeToLearn || {})[id];
+      const matches = ui.bizFilter === 'main' ? mainSet.has(id) : (info && info.tracks && info.tracks.includes(ui.bizFilter));
+      if (!matches) ui.bizFilter = 'all';
+    }
+  }
+  if (opts.expand !== false) ui.dossierCollapsed = false;
+  const stage = $('stage');
+  const prevTop = stage ? stage.scrollTop : 0;
+  renderOverview();
+  if (stage) stage.scrollTop = prevTop;
+  if (ui.dossierModalOpen) {
+    renderDossierModal();
+    const sc = document.querySelector('#dossierModalBox .dos-modal-scroll');
+    if (sc) sc.scrollTop = 0;
+  }
+}
+
+function renderDossierHeadHtml(ctx, isModal) {
+  const srcChips = (ctx.sources || []).slice(0, 3).map(s => {
+    const fname = String(s.path || '').split(/[\\\\/]/).pop() || s.label || 'src';
+    const lineStr = (s.end_line && s.end_line !== s.line) ? \`L\${s.line}–\${s.end_line}\` : \`L\${s.line || 1}\`;
+    return \`<span class="src-chip-inline">📄 \${escapeHtml(fname)}:\${lineStr}</span>\`;
+  }).join('');
+  const stBtnLabel = ctx.station
+    ? (ctx.mode === 'dataflow'
+      ? \`🚆 进入第 \${ctx.station.codeLabel} 站源码精读 →\`
+      : \`🚆 去第 \${ctx.station.codeLabel} 站精读源码 →\`)
+    : '';
+  return \`<div class="dos-head">
+    <div class="dos-head-left">
+      <div class="dos-title-row">
+        <span class="dos-mode-badge">\${escapeHtml(ctx.badge)}</span>
+        <span class="dos-idx-pill">\${ctx.index + 1} / \${ctx.total}</span>
+        <span class="dos-title-txt">\${escapeHtml(ctx.title)}</span>
+        \${srcChips}
+      </div>
+      <div class="dos-sub-txt">\${escapeHtml(ctx.sublabel)} · 支持键盘 <kbd style="padding:0 4px;border:1px solid var(--border);border-radius:4px;font-size:10px">←</kbd> <kbd style="padding:0 4px;border:1px solid var(--border);border-radius:4px;font-size:10px">→</kbd> 切换上下模块</div>
+    </div>
+    <div class="dos-head-actions">
+      <div class="dos-nav-grp">
+        <button class="btn" data-dos-nav="prev" title="切换到上一个模块 (←)">← 上一个</button>
+        <button class="btn" data-dos-nav="next" title="切换到下一个模块 (→)">下一个 →</button>
+      </div>
+      \${isModal
+        ? '<button class="btn" data-dos-close-modal="1">✕ 关闭弹层 (Esc)</button>'
+        : \`<button class="btn primary" data-dos-open-modal="1">⛶ 全屏深读</button>
+           <button class="btn" data-dos-toggle-collapse="1">\${ui.dossierCollapsed ? '展开详解 ▾' : '收起面板 ▴'}</button>\`}
+      \${ctx.station ? \`<button class="btn cta" data-dos-go-st="\${ctx.station.id}">\${escapeHtml(stBtnLabel)}</button>\` : ''}
+      \${ctx.altStation ? \`<button class="btn primary" data-dos-go-st="\${ctx.altStation.id}">⚡ 关联第 \${ctx.altStation.codeLabel} 站</button>\` : ''}
+      \${ctx.wbModuleId ? \`<button class="btn" data-dos-go-wb="\${ctx.wbModuleId}" data-dos-go-wbnode="\${ctx.wbNodeId || ''}">🗂️ 模块图谱</button>\` : ''}
+    </div>
+  </div>\`;
+}
+
+function renderDossierBodyHtml(ctx) {
+  const d = ctx.dossier;
+  if (!d) return '';
+  const qaList = d.interviewQuestions || [];
+  const allAnsOpen = qaList.length > 0 && qaList.every((_, i) => Boolean(ui.dossierOpenAns[\`\${ctx.mode}:\${ctx.id}:\${i}\`]));
+
+  const renderNbChips = (items, dirLabel) => {
+    if (!items.length) return \`<span class="dos-nb-lbl">\${dirLabel}：</span><span style="font-size:11px;color:var(--text-dim)">（链路起点/终点）</span>\`;
+    return \`<span class="dos-nb-lbl">\${dirLabel}：</span>\` + items.map(it =>
+      \`<button class="dos-neighbor-chip" data-dos-jump-id="\${escapeHtml(it.id)}" title="点击跳转到该模块的深度档案">
+        <span>\${escapeHtml(it.label)}</span>
+        \${it.edgeLabel ? \`<span class="nb-edge">(\${escapeHtml(it.edgeLabel)})</span>\` : ''}
+      </button>\`
+    ).join('');
+  };
+
+  const renderIoTable = (fields, colTitle) => \`
+    <table class="dos-io-tbl">
+      <thead><tr><th style="width:28%">\${colTitle}</th><th style="width:22%">类型/协议</th><th>说明</th></tr></thead>
+      <tbody>\${(fields || []).map(f => \`<tr><td><code>\${escapeHtml(f.name)}</code></td><td style="color:var(--text-muted);font-family:ui-monospace,Consolas,monospace;font-size:10.5px">\${escapeHtml(f.type)}</td><td>\${formatInline(f.desc)}</td></tr>\`).join('')}</tbody>
+    </table>\`;
+
+  return \`<div class="dos-body">
+    <!-- 1. Role & Why Need & Problems Solved -->
+    <div class="dos-card">
+      <div class="dos-card-head">
+        <div class="dos-card-title">🎯 模块作用 · 为什么需要 · 解决什么问题</div>
+        <span class="dos-card-sub">职责边界与痛点</span>
+      </div>
+      <div>
+        <div class="dos-sub-lbl">模块核心作用与定位</div>
+        <div class="dos-role-box">\${formatInline(d.role)}</div>
+      </div>
+      <div>
+        <div class="dos-sub-lbl">为什么架构上必须独立存在这个模块？</div>
+        <div class="dos-why-box">\${formatInline(d.whyNeed)}</div>
+      </div>
+      <div>
+        <div class="dos-sub-lbl">重点解决的核心工程问题</div>
+        <ul class="dos-problem-list">\${(d.problemsSolved || []).map(p => \`<li>\${formatInline(p)}</li>\`).join('')}</ul>
+      </div>
+    </div>
+
+    <!-- 2. Principles & Anchors -->
+    <div class="dos-card">
+      <div class="dos-card-head">
+        <div class="dos-card-title">⚙️ 核心实现原理与真实源码锚点</div>
+        <span class="dos-card-sub">内部运转机制</span>
+      </div>
+      \${(d.principles || []).map((p, idx) => \`<div class="dos-prin-item">
+        <div class="dos-prin-top">
+          <span class="dos-prin-title">\${idx + 1}. \${escapeHtml(p.title)}</span>
+          <span class="dos-anchor-badge" title="\${escapeHtml(p.anchor)}">\${escapeHtml(p.anchor)}</span>
+        </div>
+        <div class="dos-prin-detail">\${formatInline(p.detail)}</div>
+      </div>\`).join('')}
+    </div>
+
+    <!-- 3. Production Failure Scenarios -->
+    <div class="dos-card">
+      <div class="dos-card-head">
+        <div class="dos-card-title">🚨 如果这个模块出问题，上线会出现什么情况？</div>
+        <span class="dos-card-sub">2 组典型故障推演</span>
+      </div>
+      \${(d.failureScenarios || []).map(fs => {
+        const sevCls = fs.severity === 'P0' ? 'p0' : 'p1';
+        const sevLbl = fs.severity === 'P0' ? 'P0 致命阻断/崩溃/安全' : 'P1 降级/边界/异常';
+        return \`<div class="dos-incident sev-\${sevCls}">
+          <div><span class="dos-sev-badge \${sevCls}">\${sevLbl}</span></div>
+          <div class="dos-inc-line"><span class="dos-inc-tag">【故障诱因】</span>\${formatInline(fs.trigger)}</div>
+          <div class="dos-inc-line"><span class="dos-inc-tag">【线上表象与影响】</span>\${formatInline(fs.prodImpact)}</div>
+          <div class="dos-inc-line" style="color:var(--text-muted)"><span class="dos-inc-tag" style="color:var(--emerald)">【兜底与排查入口】</span>\${formatInline(fs.fallbackOrCheck)}</div>
+        </div>\`;
+      }).join('')}
+    </div>
+
+    <!-- 4. I/O Contract & Upstream/Downstream Links -->
+    <div class="dos-card">
+      <div class="dos-card-head">
+        <div class="dos-card-title">🔄 模块传入传出契约与上下游联动</div>
+        <span class="dos-card-sub">点击邻居跳转导读</span>
+      </div>
+      <div class="dos-neighbors-row">\${renderNbChips(ctx.upstream, '⬅️ 上游来源')}</div>
+      <div class="dos-io-box in">
+        <div class="dos-io-sum">📥 传入：\${formatInline(d.io?.inSummary || '')}</div>
+        \${renderIoTable(d.io?.inFields, '传入字段')}
+      </div>
+      <div class="dos-io-transform"><strong>⚙️ 加工转换：</strong>\${formatInline(d.io?.transform || '')}</div>
+      <div class="dos-io-box out">
+        <div class="dos-io-sum">📤 传出：\${formatInline(d.io?.outSummary || '')}</div>
+        \${renderIoTable(d.io?.outFields, '传出字段')}
+      </div>
+      <div class="dos-neighbors-row">\${renderNbChips(ctx.downstream, '➡️ 下游去向')}</div>
+    </div>
+
+    <!-- 5. Exam Points & Interview Questions -->
+    <div class="dos-card full">
+      <div class="dos-card-head">
+        <div class="dos-card-title">🎓 高频考点 & 面试真题自测（先口述再展开对照）</div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <div class="dos-tag-row">\${(d.examPoints || []).map(tag => \`<span class="dos-exam-tag"># \${escapeHtml(tag)}</span>\`).join('')}</div>
+          <button class="btn primary" data-dos-toggle-all-qa="1">\${allAnsOpen ? '收起全部参考答法' : '展开全部参考答法'}</button>
+        </div>
+      </div>
+      <div class="dos-qa-grid">
+        \${qaList.map((qa, idx) => {
+          const k = \`\${ctx.mode}:\${ctx.id}:\${idx}\`;
+          const isOpen = Boolean(ui.dossierOpenAns[k]);
+          return \`<div class="dos-qa-item">
+            <div class="dos-qa-top">
+              <span class="dos-qa-focus">🎯 考察点：\${escapeHtml(qa.focus)}</span>
+              <button class="btn" data-dos-toggle-qa="\${idx}">\${isOpen ? '收起答法 ▴' : '展开高分答法 ▾'}</button>
+            </div>
+            <div class="dos-qa-q">Q\${idx + 1}. \${formatInline(qa.q)}</div>
+            <div class="dos-qa-ans \${isOpen ? 'open' : ''}"><strong>答：</strong>\${formatInline(qa.a)}</div>
+          </div>\`;
+        }).join('')}
+      </div>
+    </div>
+  </div>\`;
+}
+
+function bindDossierEvents(container, ctx, isModal) {
+  if (!container || !ctx) return;
+  container.querySelectorAll('[data-dos-nav]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const targetId = btn.dataset.dosNav === 'prev' ? ctx.prevId : ctx.nextId;
+      selectOverviewModule(ctx.mode, targetId, { expand: !ui.dossierCollapsed });
+    });
+  });
+  container.querySelectorAll('[data-dos-toggle-collapse]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      ui.dossierCollapsed = !ui.dossierCollapsed;
+      const stage = $('stage');
+      const prevTop = stage ? stage.scrollTop : 0;
+      renderOverview();
+      if (stage) stage.scrollTop = prevTop;
+    });
+  });
+  container.querySelectorAll('[data-dos-open-modal]').forEach(btn => {
+    btn.addEventListener('click', () => openDossierModal());
+  });
+  container.querySelectorAll('[data-dos-close-modal]').forEach(btn => {
+    btn.addEventListener('click', () => closeDossierModal());
+  });
+  container.querySelectorAll('[data-dos-go-st]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (isModal) closeDossierModal();
+      openStation(btn.dataset.dosGoSt);
+    });
+  });
+  container.querySelectorAll('[data-dos-go-wb]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (isModal) closeDossierModal();
+      openWorkbenchAt(btn.dataset.dosGoWb, btn.dataset.dosGoWbnode || undefined);
+    });
+  });
+  container.querySelectorAll('[data-dos-jump-id]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      selectOverviewModule(ctx.mode, btn.dataset.dosJumpId, { expand: true });
+    });
+  });
+  container.querySelectorAll('[data-dos-toggle-qa]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const idx = btn.dataset.dosToggleQa;
+      const k = \`\${ctx.mode}:\${ctx.id}:\${idx}\`;
+      ui.dossierOpenAns[k] = !ui.dossierOpenAns[k];
+      const stage = $('stage');
+      const prevTop = stage ? stage.scrollTop : 0;
+      const modalSc = document.querySelector('#dossierModalBox .dos-modal-scroll');
+      const prevModalTop = modalSc ? modalSc.scrollTop : 0;
+      renderOverview();
+      if (stage) stage.scrollTop = prevTop;
+      if (ui.dossierModalOpen) {
+        renderDossierModal();
+        const nextModalSc = document.querySelector('#dossierModalBox .dos-modal-scroll');
+        if (nextModalSc) nextModalSc.scrollTop = prevModalTop;
+      }
+    });
+  });
+  container.querySelectorAll('[data-dos-toggle-all-qa]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const qs = ctx.dossier ? (ctx.dossier.interviewQuestions || []) : [];
+      const allOpen = qs.every((_, i) => Boolean(ui.dossierOpenAns[\`\${ctx.mode}:\${ctx.id}:\${i}\`]));
+      qs.forEach((_, i) => { ui.dossierOpenAns[\`\${ctx.mode}:\${ctx.id}:\${i}\`] = !allOpen; });
+      const stage = $('stage');
+      const prevTop = stage ? stage.scrollTop : 0;
+      const modalSc = document.querySelector('#dossierModalBox .dos-modal-scroll');
+      const prevModalTop = modalSc ? modalSc.scrollTop : 0;
+      renderOverview();
+      if (stage) stage.scrollTop = prevTop;
+      if (ui.dossierModalOpen) {
+        renderDossierModal();
+        const nextModalSc = document.querySelector('#dossierModalBox .dos-modal-scroll');
+        if (nextModalSc) nextModalSc.scrollTop = prevModalTop;
+      }
+    });
+  });
+}
+
+function renderDossierModal() {
+  const ctx = getActiveOverviewContext();
+  const box = $('dossierModalBox');
+  if (!box || !ctx || !ctx.dossier) return;
+  box.innerHTML = \`\${renderDossierHeadHtml(ctx, true)}<div class="dos-modal-scroll">\${renderDossierBodyHtml(ctx)}</div>\`;
+  bindDossierEvents(box, ctx, true);
+}
+
+function openDossierModal() {
+  const ctx = getActiveOverviewContext();
+  if (!ctx || !ctx.dossier) return;
+  ui.dossierModalOpen = true;
+  renderDossierModal();
+  $('dossierModal').classList.add('open');
+}
+
+function closeDossierModal() {
+  ui.dossierModalOpen = false;
+  $('dossierModal').classList.remove('open');
+}
+
 function renderOverview() {
   const nextSt = getNextStation();
   const totalStations = DATA.stations.length;
@@ -1405,7 +2109,7 @@ function renderOverview() {
   const projName = DATA.meta?.projectName || '本项目';
   const firstSt = getOrderedStations()[0];
   const ctaText = doneCount === 0
-    ? \`🚀 从主线一第 \${firstSt.codeLabel} 站开始：追踪一条核心请求的完整链路 →\`
+    ? \`🚀 从主线一第 \${firstSt.codeLabel} 站开始：追踪一条核心主线的完整链路 →\`
     : (doneCount >= totalStations ? \`🏆 全部 \${totalStations} 站已通关！进入面试总考 →\` : \`▶ 继续学习第 \${nextSt.codeLabel} 站：\${nextSt.dfLabel} →\`);
 
   const flowChipsHtml = DATA.flows.map(f => {
@@ -1417,54 +2121,69 @@ function renderOverview() {
     </div>\`;
   }).join('');
 
-  // Blueprint Detail Footer Bar
-  let detailBarHtml = '';
-  if (ui.blueprintMode === 'dataflow') {
-    const st = getStation(ui.selectedDfStationId);
-    detailBarHtml = \`
-      <div style="min-width:0;flex:1">
-        <div style="font-weight:800;font-size:13px">📍 选中站点：\${escapeHtml(st.codeLabel)} · \${escapeHtml(st.title)}</div>
-        <div style="font-size:12px;color:var(--text-muted);margin-top:2px">📥 \${escapeHtml(st.inputSpec)} <strong>→</strong> 📤 \${escapeHtml(st.outputSpec)}</div>
-      </div>
-      <div style="display:flex;gap:8px;flex-shrink:0">
-        <button class="btn cta" id="btnEnterSelectedStation">🚆 进入第 \${st.codeLabel} 站源码精读 →</button>
-      </div>\`;
-  } else if (ui.blueprintMode === 'techarch') {
-    const comp = DATA.techArch.components.find(c => c.id === ui.selectedTechCompId) || DATA.techArch.components[0];
-    const info = (DATA.techArch.compToStation || {})[comp?.id] || { stationId: FIRST_STATION_ID, role: comp?.sublabel || '' };
-    const st = getStation(info.stationId);
-    detailBarHtml = \`
-      <div style="min-width:0;flex:1">
-        <div style="font-weight:800;font-size:13px">🏛️ 架构组件：\${escapeHtml(comp.label)}（\${escapeHtml(comp.sublabel || '')}）</div>
-        <div style="font-size:12px;color:var(--text-muted);margin-top:2px">\${escapeHtml(info.role)}</div>
-      </div>
-      <div style="display:flex;gap:8px;flex-shrink:0">
-        <button class="btn cta" id="btnEnterCompStation">🚆 去第 \${st.codeLabel} 站精读此组件源码 →</button>
-      </div>\`;
+  const ctx = getActiveOverviewContext();
+  const d = ctx ? ctx.dossier : null;
+  let bpBottomHtml = '';
+  if (d) {
+    bpBottomHtml = \`<div class="dos-deck" id="overviewDossierDeck">
+      \${renderDossierHeadHtml(ctx, false)}
+      \${ui.dossierCollapsed
+        ? \`<div class="dos-collapsed-bar">
+            <span><strong>模块定位：</strong>\${formatInline(d.role)}</span>
+            <button class="btn primary" data-dos-toggle-collapse="1">展开 6 维深度档案 ▾</button>
+          </div>\`
+        : renderDossierBodyHtml(ctx)}
+    </div>\`;
   } else {
-    const bf = DATA.businessFlow;
-    const node = bf.nodes.find(n => n.id === ui.selectedBizNodeId) || bf.nodes[0];
-    const lane = bf.lanes.find(l => l.id === node?.lane);
-    const info = (bf.nodeToLearn || {})[node?.id] || { stationId: FIRST_STATION_ID, role: node?.sublabel || '' };
-    const st = getStation(info.stationId);
-    const altSt = info.altStationId ? getStation(info.altStationId) : null;
-    const srcChips = (node.sources || []).map(s =>
-      \`<span class="src-chip-inline">📄 \${escapeHtml(s.path.split('/').pop())}:L\${s.line}–\${s.end_line}</span>\`
-    ).join('');
-    detailBarHtml = \`
-      <div style="min-width:0;flex:1">
-        <div style="font-weight:800;font-size:13px;display:flex;align-items:center;gap:6px;flex-wrap:wrap">
-          <span>🧭 业务节点：\${escapeHtml(node.label)}</span>
-          <span style="font-size:11px;font-weight:700;padding:1px 7px;border-radius:999px;background:var(--accent-soft);color:var(--accent)">\${escapeHtml(lane ? lane.label : '')}</span>
-          \${srcChips}
+    let detailBarHtml = '';
+    if (ui.blueprintMode === 'dataflow') {
+      const st = getStation(ui.selectedDfStationId);
+      detailBarHtml = \`
+        <div style="min-width:0;flex:1">
+          <div style="font-weight:800;font-size:13px">📍 选中站点：\${escapeHtml(st.codeLabel)} · \${escapeHtml(st.title)}</div>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:2px">📥 \${escapeHtml(st.inputSpec)} <strong>→</strong> 📤 \${escapeHtml(st.outputSpec)}</div>
         </div>
-        <div style="font-size:12px;color:var(--text-muted);margin-top:3px">\${escapeHtml(info.role)}</div>
-      </div>
-      <div style="display:flex;gap:7px;flex-shrink:0;flex-wrap:wrap">
-        <button class="btn cta" id="btnEnterBizStation">🚆 去第 \${st.codeLabel} 站精读源码 →</button>
-        \${altSt ? \`<button class="btn primary" id="btnEnterBizAltStation">⚡ 关联第 \${altSt.codeLabel} 站</button>\` : ''}
-        \${info.wbModuleId ? \`<button class="btn" id="btnEnterBizWb">🗂️ 模块图谱</button>\` : ''}
-      </div>\`;
+        <div style="display:flex;gap:8px;flex-shrink:0">
+          <button class="btn cta" id="btnEnterSelectedStation">🚆 进入第 \${st.codeLabel} 站源码精读 →</button>
+        </div>\`;
+    } else if (ui.blueprintMode === 'techarch') {
+      const comp = DATA.techArch.components.find(c => c.id === ui.selectedTechCompId) || DATA.techArch.components[0];
+      const info = (DATA.techArch.compToStation || {})[comp?.id] || { stationId: FIRST_STATION_ID, role: comp?.sublabel || '' };
+      const st = getStation(info.stationId);
+      detailBarHtml = \`
+        <div style="min-width:0;flex:1">
+          <div style="font-weight:800;font-size:13px">🏛️ 架构组件：\${escapeHtml(comp.label)}（\${escapeHtml(comp.sublabel || '')}）</div>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:2px">\${escapeHtml(info.role)}</div>
+        </div>
+        <div style="display:flex;gap:8px;flex-shrink:0">
+          <button class="btn cta" id="btnEnterCompStation">🚆 去第 \${st.codeLabel} 站精读此组件源码 →</button>
+        </div>\`;
+    } else {
+      const bf = DATA.businessFlow;
+      const node = bf.nodes.find(n => n.id === ui.selectedBizNodeId) || bf.nodes[0];
+      const lane = bf.lanes.find(l => l.id === node?.lane);
+      const info = (bf.nodeToLearn || {})[node?.id] || { stationId: FIRST_STATION_ID, role: node?.sublabel || '' };
+      const st = getStation(info.stationId);
+      const altSt = info.altStationId ? getStation(info.altStationId) : null;
+      const srcChips = (node.sources || []).map(s =>
+        \`<span class="src-chip-inline">📄 \${escapeHtml(s.path.split('/').pop())}:L\${s.line}–\${s.end_line}</span>\`
+      ).join('');
+      detailBarHtml = \`
+        <div style="min-width:0;flex:1">
+          <div style="font-weight:800;font-size:13px;display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+            <span>🧭 业务节点：\${escapeHtml(node.label)}</span>
+            <span style="font-size:11px;font-weight:700;padding:1px 7px;border-radius:999px;background:var(--accent-soft);color:var(--accent)">\${escapeHtml(lane ? lane.label : '')}</span>
+            \${srcChips}
+          </div>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:3px">\${escapeHtml(info.role)}</div>
+        </div>
+        <div style="display:flex;gap:7px;flex-shrink:0;flex-wrap:wrap">
+          <button class="btn cta" id="btnEnterBizStation">🚆 去第 \${st.codeLabel} 站精读源码 →</button>
+          \${altSt ? \`<button class="btn primary" id="btnEnterBizAltStation">⚡ 关联第 \${altSt.codeLabel} 站</button>\` : ''}
+          \${info.wbModuleId ? \`<button class="btn" id="btnEnterBizWb">🗂️ 模块图谱</button>\` : ''}
+        </div>\`;
+    }
+    bpBottomHtml = \`<div class="bp-detail-bar">\${detailBarHtml}</div>\`;
   }
 
   // Right-side header controls per blueprint mode
@@ -1475,7 +2194,9 @@ function renderOverview() {
       \${DATA.flows.map(fl => \`<button class="flt-pill \${ui.flowFilter === fl.id ? 'active' : ''}" data-flt="\${fl.id}">\${escapeHtml(fl.filterLabel || fl.shortName)}</button>\`).join('')}
     </div>\`;
   } else if (ui.blueprintMode === 'techarch') {
-    bpHeaderRightHtml = \`<span style="font-size:11.5px;color:var(--text-muted)">点击任意 \${DATA.techArch.components.length} 个架构组件高亮连线，双击直达源码站点</span>\`;
+    bpHeaderRightHtml = d
+      ? '<span style="font-size:11.5px;color:var(--text-muted)">单击组件查看下方深度档案并高亮连线，双击或点按钮直达源码精读</span>'
+      : \`<span style="font-size:11.5px;color:var(--text-muted)">点击任意 \${DATA.techArch.components.length} 个架构组件高亮连线，双击直达源码站点</span>\`;
   } else {
     bpHeaderRightHtml = \`<div class="bp-filters">
       \${(DATA.businessFlow.trackFilters || [{ id: 'all', label: '全部业务流' }]).map(f => \`<button class="flt-pill \${ui.bizFilter === f.id ? 'active' : ''}" data-bflt="\${f.id}">\${escapeHtml(f.label)}</button>\`).join('')}
@@ -1515,9 +2236,15 @@ function renderOverview() {
     </div>\`;
   }).join('');
 
-  const heroKicker = DATA.meta?.heroKicker || \`🏛️ 融合三大全景蓝图：「全链路数据流图」+「技术架构图」+「端到端业务流程泳道图」· \${totalStations} 站源码通关\`;
+  const hasDossiers = Boolean(DATA.overviewDossiers);
+  const totalDossiers = totalStations + (DATA.techArch?.components?.length || 0) + (DATA.businessFlow?.nodes?.length || 0);
+  const heroKicker = DATA.meta?.heroKicker || (hasDossiers
+    ? \`🏛️ 融合三大全景蓝图：「全链路数据流图」+「技术架构图」+「端到端业务流程泳道图」· \${totalDossiers} 节点模块百科 + \${totalStations} 站源码通关\`
+    : \`🏛️ 融合三大全景蓝图：「全链路数据流图」+「技术架构图」+「端到端业务流程泳道图」· \${totalStations} 站源码通关\`);
   const heroTitle = DATA.meta?.heroTitle || \`顺着真实架构、数据流与业务泳道，一站一站吃透 \${projName}！\`;
-  const heroSub = DATA.meta?.heroSubtitle || '先在下方三张全景架构/业务图上建立全局视野，点击任意节点即可直接跳入「左逐行中文精注源码 ↔ 右 5-STEP 精读工坊」循序渐进掌握每个模块！';
+  const heroSub = DATA.meta?.heroSubtitle || (hasDossiers
+    ? '先在下方三张全景图上**单击任意模块节点**，即可直接在图下（或全屏弹层）精读该模块的**作用痛点、核心原理、线上故障推演、传入传出与面试真题**；点击按钮或双击节点再进入源码精读！'
+    : '先在下方三张全景架构/业务图上建立全局视野，点击任意节点即可直接跳入「左逐行中文精注源码 ↔ 右 5-STEP 精读工坊」循序渐进掌握每个模块！');
   const dirTreeLines = WB_MODULES[0]?.files?.[0]?.lines?.length || 0;
   const wbBtnText = DATA.meta?.workbenchBtnLabel || \`🗂️ 打开 \${dirTreeLines} 行中文项目目录 ↔ \${Math.max(1, WB_MODULES.length - 1)} 模块流转图\`;
 
@@ -1547,7 +2274,7 @@ function renderOverview() {
       <div class="bp-canvas">
         \${ui.blueprintMode === 'dataflow' ? buildDataflowBlueprintSvg() : (ui.blueprintMode === 'techarch' ? buildTechArchBlueprintSvg() : buildBusinessFlowBlueprintSvg())}
       </div>
-      <div class="bp-detail-bar">\${detailBarHtml}</div>
+      \${bpBottomHtml}
     </div>
 
     <div style="font-size:15px;font-weight:800;margin:18px 0 10px">📋 按 \${DATA.flows.length} 条全链路编排的循序渐进源码学习大纲 <span style="font-size:12px;font-weight:500;color:var(--text-muted)">（点击任意一站立刻进入「左逐行中文源码 ↔ 右流转图 + 数据契约」精读）</span></div>
@@ -1564,40 +2291,44 @@ function renderOverview() {
     el.addEventListener('click', () => {
       ui.blueprintMode = 'dataflow';
       ui.flowFilter = el.dataset.focusFlow;
+      const stage = $('stage'); const prevTop = stage ? stage.scrollTop : 0;
       renderOverview();
+      if (stage) stage.scrollTop = prevTop;
     });
   });
   $('viewOverview').querySelectorAll('.bp-tab').forEach(b => {
-    b.addEventListener('click', () => { ui.blueprintMode = b.dataset.bp; renderOverview(); });
+    b.addEventListener('click', () => {
+      ui.blueprintMode = b.dataset.bp;
+      const stage = $('stage'); const prevTop = stage ? stage.scrollTop : 0;
+      renderOverview();
+      if (stage) stage.scrollTop = prevTop;
+    });
   });
   $('viewOverview').querySelectorAll('.flt-pill[data-flt]').forEach(b => {
-    b.addEventListener('click', () => { ui.flowFilter = b.dataset.flt; renderOverview(); });
+    b.addEventListener('click', () => {
+      ui.flowFilter = b.dataset.flt;
+      const stage = $('stage'); const prevTop = stage ? stage.scrollTop : 0;
+      renderOverview();
+      if (stage) stage.scrollTop = prevTop;
+    });
   });
   $('viewOverview').querySelectorAll('.flt-pill[data-bflt]').forEach(b => {
-    b.addEventListener('click', () => { ui.bizFilter = b.dataset.bflt; renderOverview(); });
+    b.addEventListener('click', () => {
+      ui.bizFilter = b.dataset.bflt;
+      const stage = $('stage'); const prevTop = stage ? stage.scrollTop : 0;
+      renderOverview();
+      if (stage) stage.scrollTop = prevTop;
+    });
   });
   if ($('dfBlueprintSvg')) {
     $('dfBlueprintSvg').querySelectorAll('.arch-node').forEach(g => {
-      g.addEventListener('click', () => {
-        const sid = g.dataset.stid;
-        if (ui.selectedDfStationId === sid) openStation(sid);
-        else { ui.selectedDfStationId = sid; renderOverview(); }
-      });
+      g.addEventListener('click', () => selectOverviewModule('dataflow', g.dataset.stid, { expand: true }));
       g.addEventListener('dblclick', () => openStation(g.dataset.stid));
     });
   }
   if ($('techArchSvg')) {
     $('techArchSvg').querySelectorAll('.arch-node').forEach(g => {
-      g.addEventListener('click', () => {
-        const cid = g.dataset.compId;
-        if (ui.selectedTechCompId === cid) {
-          const info = DATA.techArch.compToStation[cid];
-          if (info) openStation(info.stationId);
-        } else {
-          ui.selectedTechCompId = cid;
-          renderOverview();
-        }
-      });
+      g.addEventListener('click', () => selectOverviewModule('techarch', g.dataset.compId, { expand: true }));
       g.addEventListener('dblclick', () => {
         const info = DATA.techArch.compToStation[g.dataset.compId];
         if (info) openStation(info.stationId);
@@ -1606,48 +2337,43 @@ function renderOverview() {
   }
   if ($('businessFlowSvg')) {
     $('businessFlowSvg').querySelectorAll('.arch-node').forEach(g => {
-      g.addEventListener('click', () => {
-        const bid = g.dataset.bizId;
-        if (ui.selectedBizNodeId === bid) {
-          const info = DATA.businessFlow.nodeToLearn[bid];
-          if (info) openStation(info.stationId);
-        } else {
-          ui.selectedBizNodeId = bid;
-          renderOverview();
-        }
-      });
+      g.addEventListener('click', () => selectOverviewModule('businessflow', g.dataset.bizId, { expand: true }));
       g.addEventListener('dblclick', () => {
         const info = DATA.businessFlow.nodeToLearn[g.dataset.bizId];
         if (info) openStation(info.stationId);
       });
     });
   }
-  if ($('btnEnterSelectedStation')) {
-    $('btnEnterSelectedStation').addEventListener('click', () => openStation(ui.selectedDfStationId));
-  }
-  if ($('btnEnterCompStation')) {
-    $('btnEnterCompStation').addEventListener('click', () => {
-      const info = DATA.techArch.compToStation[ui.selectedTechCompId];
-      if (info) openStation(info.stationId);
-    });
-  }
-  if ($('btnEnterBizStation')) {
-    $('btnEnterBizStation').addEventListener('click', () => {
-      const info = DATA.businessFlow.nodeToLearn[ui.selectedBizNodeId];
-      if (info) openStation(info.stationId);
-    });
-  }
-  if ($('btnEnterBizAltStation')) {
-    $('btnEnterBizAltStation').addEventListener('click', () => {
-      const info = DATA.businessFlow.nodeToLearn[ui.selectedBizNodeId];
-      if (info && info.altStationId) openStation(info.altStationId);
-    });
-  }
-  if ($('btnEnterBizWb')) {
-    $('btnEnterBizWb').addEventListener('click', () => {
-      const info = DATA.businessFlow.nodeToLearn[ui.selectedBizNodeId];
-      if (info && info.wbModuleId) openWorkbenchAt(info.wbModuleId);
-    });
+  if (d) {
+    bindDossierEvents($('overviewDossierDeck'), ctx, false);
+  } else {
+    if ($('btnEnterSelectedStation')) {
+      $('btnEnterSelectedStation').addEventListener('click', () => openStation(ui.selectedDfStationId));
+    }
+    if ($('btnEnterCompStation')) {
+      $('btnEnterCompStation').addEventListener('click', () => {
+        const info = (DATA.techArch?.compToStation || {})[ui.selectedTechCompId];
+        if (info) openStation(info.stationId);
+      });
+    }
+    if ($('btnEnterBizStation')) {
+      $('btnEnterBizStation').addEventListener('click', () => {
+        const info = (DATA.businessFlow?.nodeToLearn || {})[ui.selectedBizNodeId];
+        if (info) openStation(info.stationId);
+      });
+    }
+    if ($('btnEnterBizAltStation')) {
+      $('btnEnterBizAltStation').addEventListener('click', () => {
+        const info = (DATA.businessFlow?.nodeToLearn || {})[ui.selectedBizNodeId];
+        if (info && info.altStationId) openStation(info.altStationId);
+      });
+    }
+    if ($('btnEnterBizWb')) {
+      $('btnEnterBizWb').addEventListener('click', () => {
+        const info = (DATA.businessFlow?.nodeToLearn || {})[ui.selectedBizNodeId];
+        if (info && info.wbModuleId) openWorkbenchAt(info.wbModuleId);
+      });
+    }
   }
   $('viewOverview').querySelectorAll('[data-open-st]').forEach(el => {
     el.addEventListener('click', (e) => { e.stopPropagation(); openStation(el.dataset.openSt); });
@@ -1712,12 +2438,12 @@ function renderStation(scrollCode = true) {
   const prevSt = globalIdx > 0 ? allOrdered[globalIdx - 1] : null;
   const nextSt = globalIdx < allOrdered.length - 1 ? allOrdered[globalIdx + 1] : null;
 
-  const compLabels = st.techCompIds.map(cid => {
-    const c = DATA.techArch.components.find(x => x.id === cid);
+  const compLabels = (st.techCompIds || []).map(cid => {
+    const c = (DATA.techArch?.components || []).find(x => x.id === cid);
     return c ? \`<button class="flt-pill" data-jump-comp="\${c.id}" title="去图二·技术架构总览高亮此组件">🏛️ \${escapeHtml(c.label)}</button>\` : '';
   }).join(' ');
-  const bizNodesForSt = DATA.businessFlow.nodes.filter(n => {
-    const m = DATA.businessFlow.nodeToLearn[n.id];
+  const bizNodesForSt = (DATA.businessFlow?.nodes || []).filter(n => {
+    const m = (DATA.businessFlow?.nodeToLearn || {})[n.id];
     return m && (m.stationId === st.id || m.altStationId === st.id);
   }).slice(0, 1);
   const bizLabels = bizNodesForSt.map(n =>
@@ -1822,9 +2548,7 @@ function renderStation(scrollCode = true) {
           <button class="metro-flow-btn \${fl.id === flow.id ? 'active' : ''}" data-mflow="\${fl.id}">\${escapeHtml(fl.shortName)}</button>\`).join('')}
       </div>
       <div class="metro-track">\${metroStopsHtml}</div>
-      <div style="display:flex;gap:6px">
-        <button class="btn primary" id="btnStToWb">🗂️ 全景图谱深挖</button>
-      </div>
+      \${(st.wbTarget && WB_MODULES.length) ? '<div style="display:flex;gap:6px"><button class="btn primary" id="btnStToWb">🗂️ 全景图谱深挖</button></div>' : ''}
     </div>
 
     <!-- Compact Input -> Station Identity -> Output Strip -->
@@ -1994,7 +2718,9 @@ function renderStation(scrollCode = true) {
       setTimeout(() => { $('stIoPanel')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 20);
     });
   });
-  $('btnStToWb').addEventListener('click', () => openWorkbenchAt(st.wbTarget.moduleId, st.wbTarget.nodeId));
+  $('btnStToWb')?.addEventListener('click', () => {
+    if (st.wbTarget) openWorkbenchAt(st.wbTarget.moduleId, st.wbTarget.nodeId);
+  });
   $('btnStDoneTop').addEventListener('click', () => toggleStationDone(st.id));
   $('btnToggleWhy').addEventListener('click', () => { ui.whyCollapsed = !ui.whyCollapsed; renderStation(false); });
   $('stNoteModeGroup').querySelectorAll('.note-mode-btn').forEach(b => {
@@ -2196,10 +2922,10 @@ function wbScrollToActiveCode() {
   }
 }
 function wbRenderDiagram() {
-  const mod = wbCurMod(), isOverview = mod.id === 'dir_tree';
+  const mod = wbCurMod(), isOverview = mod.kind === 'tree' || wb.moduleIdx === 0;
   $('wbDiagramTitle').textContent = mod.title;
   $('wbDiagramSub').textContent = isOverview
-    ? (wb.overviewClickMode === 'drill' ? '左侧为完整中文目录树；点击右侧任意 9 大模块卡片直接下钻进入流程架构图' : '定位模式：单击卡片定位左侧目录，双击卡片进入流程架构图')
+    ? (wb.overviewClickMode === 'drill' ? \`左侧为完整中文目录树；点击右侧任意 \${Math.max(1, WB_MODULES.length - 1)} 大模块卡片直接下钻进入流程架构图\` : '定位模式：单击卡片定位左侧目录，双击卡片进入流程架构图')
     : mod.subtitle;
   $('wbBtnBackOverview').classList.toggle('visible', !isOverview);
   $('wbBtnOverviewMode').style.display = isOverview ? 'inline-flex' : 'none';
@@ -2444,18 +3170,21 @@ function closeSearch() { $('searchModal').classList.remove('open'); }
 function renderSearch(q) {
   const kw = q.trim().toLowerCase(), items = [];
   (DATA.stations || []).forEach(st => {
-    const hay = [st.codeLabel, st.dfLabel, st.title, st.inputSpec, st.outputSpec, st.interviewQ, ...(st.files || []).map(f => f.path)].join(' ').toLowerCase();
+    const dos = DATA.overviewDossiers?.dataflow?.[st.id];
+    const hay = [st.codeLabel, st.dfLabel, st.title, st.inputSpec, st.outputSpec, st.interviewQ, dos ? dos.role : '', ...(dos ? (dos.examPoints || []) : []), ...(st.files || []).map(f => f.path)].join(' ').toLowerCase();
     if (!kw || hay.includes(kw)) items.push({ kind: 'st', id: st.id, title: \`🚆 第 \${st.codeLabel} 站 · \${st.title}\`, sub: st.outputSpec, tag: '全链路站点' });
   });
   (DATA.techArch?.components || []).forEach(c => {
     const info = (DATA.techArch.compToStation || {})[c.id];
-    const hay = [c.label, c.sublabel || '', c.tag || '', info ? info.role : ''].join(' ').toLowerCase();
-    if (!kw || hay.includes(kw)) items.push({ kind: 'ta', id: c.id, title: \`🏛️ 架构组件 · \${c.label}（\${c.sublabel || ''}）\`, sub: info ? info.role : (c.sublabel || ''), tag: '图二技术架构' });
+    const dos = DATA.overviewDossiers?.techarch?.[c.id];
+    const hay = [c.label, c.sublabel || '', c.tag || '', info ? info.role : '', dos ? dos.role : '', ...(dos ? (dos.examPoints || []) : []), ...(c.sources || []).map(s => s.path)].join(' ').toLowerCase();
+    if (!kw || hay.includes(kw)) items.push({ kind: 'tech', id: c.id, title: \`🏛️ 技术架构 · \${c.label}（\${c.sublabel || ''}）\`, sub: dos ? dos.role : (info ? info.role : (c.sublabel || '')), tag: '图二技术架构' });
   });
   (DATA.businessFlow?.nodes || []).forEach(n => {
     const info = (DATA.businessFlow.nodeToLearn || {})[n.id];
-    const hay = [n.label, n.sublabel || '', n.tag || '', info ? info.role : '', ...(n.sources || []).map(s => s.path)].join(' ').toLowerCase();
-    if (!kw || hay.includes(kw)) items.push({ kind: 'biz', id: n.id, title: \`🧭 业务流 · \${n.label}（\${n.sublabel || ''}）\`, sub: info ? info.role : (n.sublabel || ''), tag: '图三业务泳道' });
+    const dos = DATA.overviewDossiers?.businessflow?.[n.id];
+    const hay = [n.label, n.sublabel || '', n.tag || '', info ? info.role : '', dos ? dos.role : '', ...(dos ? (dos.examPoints || []) : []), ...(n.sources || []).map(s => s.path)].join(' ').toLowerCase();
+    if (!kw || hay.includes(kw)) items.push({ kind: 'biz', id: n.id, title: \`🧭 业务流 · \${n.label}（\${n.sublabel || ''}）\`, sub: dos ? dos.role : (info ? info.role : (n.sublabel || '')), tag: '图三业务泳道' });
   });
   WB_MODULES.forEach(mod => (mod.nodes || []).forEach(n => {
     const f = (mod.files || []).find(x => x.id === n.fileId);
@@ -2470,24 +3199,39 @@ function renderSearch(q) {
   $('searchResults').querySelectorAll('.search-item').forEach(el => el.addEventListener('click', () => {
     closeSearch();
     if (el.dataset.kind === 'st') openStation(el.dataset.id);
-    else if (el.dataset.kind === 'ta') {
+    else if (el.dataset.kind === 'tech') {
       ui.blueprintMode = 'techarch';
       ui.selectedTechCompId = el.dataset.id;
+      ui.dossierCollapsed = false;
       setView('overview');
     } else if (el.dataset.kind === 'biz') {
       ui.blueprintMode = 'businessflow';
       ui.bizFilter = 'all';
       ui.selectedBizNodeId = el.dataset.id;
+      ui.dossierCollapsed = false;
       setView('overview');
     } else openWorkbenchAt(el.dataset.mod, el.dataset.node);
   }));
 }
 $('btnSearch').addEventListener('click', openSearch);
 $('searchModal').addEventListener('click', (e) => { if (e.target === $('searchModal')) closeSearch(); });
+$('dossierModal').addEventListener('click', (e) => { if (e.target === $('dossierModal')) closeDossierModal(); });
 $('searchInput').addEventListener('input', (e) => renderSearch(e.target.value));
 window.addEventListener('keydown', (e) => {
   if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); $('searchModal').classList.contains('open') ? closeSearch() : openSearch(); return; }
   if ($('searchModal').classList.contains('open') && e.key === 'Escape') { closeSearch(); return; }
+  if (ui.dossierModalOpen && e.key === 'Escape') { closeDossierModal(); return; }
+  const tag = (document.activeElement && document.activeElement.tagName) || '';
+  const inInput = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT';
+  if (ui.view === 'overview' && !$('searchModal').classList.contains('open') && !inInput) {
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+      e.preventDefault();
+      const ctx = getActiveOverviewContext();
+      if (ctx && ctx.total > 0) {
+        selectOverviewModule(ctx.mode, e.key === 'ArrowLeft' ? ctx.prevId : ctx.nextId, { expand: !ui.dossierCollapsed });
+      }
+    }
+  }
 });
 
 // Init

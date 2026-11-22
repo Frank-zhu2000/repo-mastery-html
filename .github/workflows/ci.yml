@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  smoke-and-cdp:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Ensure Headless Chrome / Chromium
+        run: |
+          if command -v google-chrome >/dev/null 2>&1; then
+            BIN=$(command -v google-chrome)
+          elif command -v chromium >/dev/null 2>&1; then
+            BIN=$(command -v chromium)
+          elif command -v chromium-browser >/dev/null 2>&1; then
+            BIN=$(command -v chromium-browser)
+          else
+            sudo apt-get update
+            sudo apt-get install -y chromium-browser || sudo apt-get install -y chromium
+            BIN=$(command -v chromium-browser || command -v chromium)
+          fi
+          echo "CHROME_PATH=$BIN" >> "$GITHUB_ENV"
+          echo "Using browser: $BIN"
+          "$BIN" --version || true
+
+      - name: Run zero-dep smoke & CDP verification suite
+        run: node tests/smoke_test.mjs

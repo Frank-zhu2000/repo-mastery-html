@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 // repo-mastery-html CLI Engine (Node.js >= 20, zero npm dependencies)
-// Subcommands: scan | prepare-notes | verify-notes | build | verify-html
+// Subcommands: scan | prepare-notes | verify-notes | verify-dossiers | build | verify-html
 
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import { execFileSync, spawn } from 'node:child_process';
 import { renderMasteryHtml } from './render_template.mjs';
@@ -47,9 +48,16 @@ function readRepoLines(repoRoot, relPath, startLine, endLine) {
 function inferSyntax(filePath, explicit) {
   if (explicit) return explicit;
   const ext = path.extname(filePath).toLowerCase().slice(1);
-  if (['go', 'py', 'ts', 'tsx', 'js', 'jsx', 'mjs', 'rs', 'java', 'kt', 'cpp', 'c', 'cc', 'h', 'hpp', 'sql', 'yaml', 'yml', 'json', 'sh', 'bash', 'toml'].includes(ext)) return ext;
-  if (path.basename(filePath).toLowerCase().startsWith('dockerfile')) return 'sh';
-  return 'go';
+  if ([
+    'go', 'py', 'ts', 'tsx', 'js', 'jsx', 'mjs', 'cjs', 'rs', 'java', 'kt',
+    'cpp', 'c', 'cc', 'cxx', 'h', 'hpp', 'rb', 'php', 'cs', 'swift', 'proto',
+    'html', 'xml', 'vue', 'svelte', 'css', 'scss', 'less', 'sql', 'yaml', 'yml',
+    'json', 'sh', 'bash', 'zsh', 'toml',
+  ].includes(ext)) return ext;
+  const base = path.basename(filePath).toLowerCase();
+  if (base.startsWith('dockerfile') || base === 'cmakelists.txt') return 'sh';
+  if (base === 'makefile' || base === 'gnumakefile' || base === 'justfile') return 'makefile';
+  return 'plain';
 }
 
 function collectUniqueFileSlices(repoRoot, curriculum) {
@@ -84,6 +92,171 @@ function loadAnnotationsDir(annDir) {
   return merged;
 }
 
+function mergeOverviewDossiers(curriculum, dossiersDir) {
+  let hasAny = Boolean(curriculum.overviewDossiers && typeof curriculum.overviewDossiers === 'object');
+  const merged = {
+    dataflow: { ...(curriculum.overviewDossiers?.dataflow || {}) },
+    techarch: { ...(curriculum.overviewDossiers?.techarch || {}) },
+    businessflow: { ...(curriculum.overviewDossiers?.businessflow || {}) },
+  };
+  if (dossiersDir) {
+    const dir = path.resolve(dossiersDir);
+    if (!fs.existsSync(dir)) die(`Dossiers directory not found: ${dir}`);
+    let loadedFiles = 0;
+    for (const key of ['dataflow', 'techarch', 'businessflow']) {
+      const fp = path.join(dir, `${key}.json`);
+      if (!fs.existsSync(fp)) continue;
+      let obj;
+      try { obj = JSON.parse(fs.readFileSync(fp, 'utf8')); }
+      catch (err) { die(`Invalid JSON in dossier file ${fp}: ${err.message}`); }
+      if (!obj || typeof obj !== 'object' || Array.isArray(obj)) {
+        die(`Dossier file ${fp} must export a top-level JSON object keyed by node ID`);
+      }
+      Object.assign(merged[key], obj);
+      loadedFiles++;
+      hasAny = true;
+    }
+    if (loadedFiles === 0) {
+      die(`Dossiers directory "${dir}" contains none of dataflow.json, techarch.json, businessflow.json`);
+    }
+  }
+  return hasAny ? merged : null;
+}
+
+function isNonEmptyStr(v) {
+  return typeof v === 'string' && v.trim().length > 0;
+}
+
+function validateOverviewDossiers(curriculum, dossiers, { allowLegacyOverview = false } = {}) {
+  const specs = [
+    { name: 'dataflow', expectedIds: (curriculum.stations || []).map((s) => s.id) },
+    { name: 'techarch', expectedIds: (curriculum.techArch?.components || []).map((c) => c.id) },
+    { name: 'businessflow', expectedIds: (curriculum.businessFlow?.nodes || []).map((n) => n.id) },
+  ];
+  const expectedCounts = {
+    dataflow: specs[0].expectedIds.length,
+    techarch: specs[1].expectedIds.length,
+    businessflow: specs[2].expectedIds.length,
+  };
+  const totalExpected = expectedCounts.dataflow + expectedCounts.techarch + expectedCounts.businessflow;
+
+  if (!dossiers) {
+    if (allowLegacyOverview) {
+      console.warn('WARNING: --allow-legacy-overview enabled; building without overviewDossiers (legacy View 1 detail bar).');
+      return {
+        skipped: true,
+        expectedCounts,
+        actualCounts: { dataflow: 0, techarch: 0, businessflow: 0 },
+        totalExpected,
+        uniqueRoles: 0,
+        errors: [],
+      };
+    }
+    return {
+      skipped: false,
+      expectedCounts,
+      actualCounts: { dataflow: 0, techarch: 0, businessflow: 0 },
+      totalExpected,
+      uniqueRoles: 0,
+      errors: ['Missing overviewDossiers! Provide overviewDossiers.{dataflow,techarch,businessflow} in curriculum.json, pass --dossiers-dir <dir>, or pass --allow-legacy-overview for legacy v5 JSON.'],
+    };
+  }
+
+  const errors = [];
+  const seenRoles = new Map();
+  const actualCounts = { dataflow: 0, techarch: 0, businessflow: 0 };
+
+  for (const spec of specs) {
+    const map = dossiers[spec.name];
+    if (!map || typeof map !== 'object' || Array.isArray(map)) {
+      errors.push(`[${spec.name}] missing object map (expected ${spec.expectedIds.length} entries)`);
+      continue;
+    }
+    const mapKeys = Object.keys(map);
+    actualCounts[spec.name] = mapKeys.length;
+    const expectedSet = new Set(spec.expectedIds);
+    const orphanKeys = mapKeys.filter((k) => !expectedSet.has(k));
+    if (orphanKeys.length > 0) {
+      errors.push(`[${spec.name}] unexpected orphan dossier key(s): ${orphanKeys.join(', ')}`);
+    }
+    if (mapKeys.length !== spec.expectedIds.length) {
+      errors.push(`[${spec.name}] expected ${spec.expectedIds.length} entries, got ${mapKeys.length}`);
+    }
+
+    for (const id of spec.expectedIds) {
+      const d = map[id];
+      const tag = `${spec.name}:${id}`;
+      if (!d || typeof d !== 'object') {
+        errors.push(`${tag} missing dossier`);
+        continue;
+      }
+      if (!isNonEmptyStr(d.role)) {
+        errors.push(`${tag} missing role`);
+      } else {
+        const trimmed = d.role.trim();
+        if (seenRoles.has(trimmed)) {
+          errors.push(`${tag} duplicate role (conflicts with ${seenRoles.get(trimmed)})`);
+        } else {
+          seenRoles.set(trimmed, tag);
+        }
+      }
+      if (!isNonEmptyStr(d.whyNeed)) errors.push(`${tag} missing whyNeed`);
+      if (!Array.isArray(d.problemsSolved) || d.problemsSolved.length < 2 || d.problemsSolved.some((p) => !isNonEmptyStr(p))) {
+        errors.push(`${tag} problemsSolved must have >= 2 non-empty strings`);
+      }
+      if (!Array.isArray(d.principles) || d.principles.length < 3) {
+        errors.push(`${tag} principles must have >= 3 items`);
+      } else {
+        d.principles.forEach((p, idx) => {
+          if (!isNonEmptyStr(p?.title) || !isNonEmptyStr(p?.detail) || !isNonEmptyStr(p?.anchor)) {
+            errors.push(`${tag} principles[${idx}] missing title/detail/anchor`);
+          }
+        });
+      }
+      if (!Array.isArray(d.failureScenarios) || d.failureScenarios.length !== 2) {
+        errors.push(`${tag} failureScenarios must have length 2`);
+      } else {
+        d.failureScenarios.forEach((f, idx) => {
+          if (!['P0', 'P1'].includes(f?.severity) || !isNonEmptyStr(f?.trigger) || !isNonEmptyStr(f?.prodImpact) || !isNonEmptyStr(f?.fallbackOrCheck)) {
+            errors.push(`${tag} failureScenarios[${idx}] invalid severity(P0|P1)/trigger/prodImpact/fallbackOrCheck`);
+          }
+        });
+      }
+      const io = d.io;
+      if (!io || !isNonEmptyStr(io.inSummary) || !isNonEmptyStr(io.transform) || !isNonEmptyStr(io.outSummary) ||
+          !Array.isArray(io.inFields) || io.inFields.length < 2 || io.inFields.some((f) => !isNonEmptyStr(f?.name) || !isNonEmptyStr(f?.type) || !isNonEmptyStr(f?.desc)) ||
+          !Array.isArray(io.outFields) || io.outFields.length < 2 || io.outFields.some((f) => !isNonEmptyStr(f?.name) || !isNonEmptyStr(f?.type) || !isNonEmptyStr(f?.desc))) {
+        errors.push(`${tag} invalid io contract (inSummary/transform/outSummary + >=2 valid inFields & outFields)`);
+      }
+      if (!Array.isArray(d.examPoints) || d.examPoints.length < 3 || d.examPoints.length > 5 || d.examPoints.some((x) => !isNonEmptyStr(x))) {
+        errors.push(`${tag} examPoints must have 3-5 non-empty items`);
+      }
+      if (!Array.isArray(d.interviewQuestions) || d.interviewQuestions.length !== 2) {
+        errors.push(`${tag} interviewQuestions must have length 2`);
+      } else {
+        d.interviewQuestions.forEach((qa, idx) => {
+          if (!isNonEmptyStr(qa?.q) || !isNonEmptyStr(qa?.focus) || !isNonEmptyStr(qa?.a)) {
+            errors.push(`${tag} interviewQuestions[${idx}] missing q/focus/a`);
+          }
+        });
+      }
+    }
+  }
+
+  if (seenRoles.size !== totalExpected) {
+    errors.push(`Expected ${totalExpected} globally unique dossier role strings, got ${seenRoles.size}`);
+  }
+
+  return {
+    skipped: false,
+    expectedCounts,
+    actualCounts,
+    totalExpected,
+    uniqueRoles: seenRoles.size,
+    errors,
+  };
+}
+
 // =========================================================================
 // SUBCOMMAND 1: scan
 // =========================================================================
@@ -100,7 +273,7 @@ function cmdScan(opts) {
   }
   if (!repoRoot || !fs.existsSync(repoRoot)) die('Provide valid --repo <path> or --github <url>');
 
-  const IGNORE = new Set(['.git', 'node_modules', 'dist', 'build', 'target', '__pycache__', '.venv', 'venv', '.next', '.nuxt', '.archify', 'vendor', '.idea', '.vscode']);
+  const IGNORE = new Set(['.git', 'node_modules', 'dist', 'build', 'target', '__pycache__', '.venv', 'venv', '.next', '.nuxt', '.archify', '.repo-mastery', 'vendor', '.idea', '.vscode']);
   const extCounts = {};
   const topDirs = {};
   const entryCandidates = [];
@@ -126,7 +299,12 @@ function cmdScan(opts) {
         extCounts[ext] = (extCounts[ext] || 0) + 1;
         const top = rel.includes('/') ? rel.split('/')[0] : '(root)';
         if (topDirs[top]) topDirs[top].files++;
-        if (/^(main|app|server|index|router|routes|cli|engine|pipeline|config|docker-compose|makefile|go\.mod|package\.json|pyproject\.toml|cargo\.toml)/i.test(ent.name) && depth <= 3) {
+        if (
+          depth <= 3 && (
+            /^(main|app|server|index|router|routes|cli|engine|pipeline|config|docker-compose|makefile|justfile|go\.mod|package\.json|pyproject\.toml|cargo\.toml|pom\.xml|build\.gradle(\.kts)?|cmakelists\.txt|gemfile|composer\.json|package\.swift|setup\.py)/i.test(ent.name) ||
+            /\.csproj$/i.test(ent.name)
+          )
+        ) {
           entryCandidates.push(rel);
         }
       }
@@ -268,7 +446,39 @@ function cmdVerifyNotes(opts) {
 }
 
 // =========================================================================
-// SUBCOMMAND 4: build
+// SUBCOMMAND 4: verify-dossiers
+// =========================================================================
+function cmdVerifyDossiers(opts) {
+  const curriculum = readJson(path.resolve(opts.curriculum || die('Missing --curriculum')));
+  const mergedDossiers = mergeOverviewDossiers(curriculum, opts['dossiers-dir']);
+  const res = validateOverviewDossiers(curriculum, mergedDossiers, { allowLegacyOverview: false });
+
+  const report = {
+    expectedCounts: res.expectedCounts,
+    actualCounts: res.actualCounts,
+    totalExpected: res.totalExpected,
+    uniqueRoles: res.uniqueRoles,
+    errorCount: res.errors.length,
+    errors: res.errors,
+  };
+
+  if (opts.output) {
+    const outPath = path.resolve(opts.output);
+    fs.mkdirSync(path.dirname(outPath), { recursive: true });
+    fs.writeFileSync(outPath, JSON.stringify(report, null, 2), 'utf8');
+  }
+
+  console.log(
+    `Dossiers verification: dataflow=${res.actualCounts.dataflow}/${res.expectedCounts.dataflow} techarch=${res.actualCounts.techarch}/${res.expectedCounts.techarch} businessflow=${res.actualCounts.businessflow}/${res.expectedCounts.businessflow} uniqueRoles=${res.uniqueRoles}/${res.totalExpected} ERRORS=${res.errors.length}`
+  );
+  if (res.errors.length > 0) {
+    res.errors.slice(0, 30).forEach((e) => console.error('  - ' + e));
+    process.exit(1);
+  }
+}
+
+// =========================================================================
+// SUBCOMMAND 5: build
 // =========================================================================
 function validateCurriculumSchema(c) {
   const req = ['meta', 'stages', 'flows', 'techArch', 'dataFlow', 'businessFlow', 'stations', 'workbenchModules', 'pitch', 'skipGuide', 'exam'];
@@ -298,6 +508,15 @@ function cmdBuild(opts) {
   }
 
   validateCurriculumSchema(curriculum);
+  const mergedDossiers = mergeOverviewDossiers(curriculum, opts['dossiers-dir']);
+  const dossierRes = validateOverviewDossiers(curriculum, mergedDossiers, {
+    allowLegacyOverview: Boolean(opts['allow-legacy-overview']),
+  });
+  if (dossierRes.errors.length > 0) {
+    dossierRes.errors.slice(0, 30).forEach((e) => console.error('  DOSSIER ERR:', e));
+    die(`Build blocked: ${dossierRes.errors.length} overviewDossiers validation error(s).`);
+  }
+
   const lineNotes = loadAnnotationsDir(annDir);
 
   // Hydrate all Stations with real verbatim repo code
@@ -347,13 +566,15 @@ function cmdBuild(opts) {
     workbenchModules: hydratedWorkbench,
     lineNotes,
   };
+  if (mergedDossiers) PAYLOAD.overviewDossiers = mergedDossiers;
+  else delete PAYLOAD.overviewDossiers;
 
   const html = renderMasteryHtml(PAYLOAD);
   fs.mkdirSync(path.dirname(outputHtml), { recursive: true });
   fs.writeFileSync(outputHtml, html, 'utf8');
   console.log(`Generated: ${outputHtml} (${Buffer.byteLength(html, 'utf8')} bytes)`);
   console.log(
-    `Summary: DataFlow=${hydratedStations.length} stations | TechArch=${curriculum.techArch.components.length} comps | BusinessFlow=${curriculum.businessFlow.nodes.length} nodes | Workbench=${hydratedWorkbench.length} views | AnnotatedLines=${checkedLines} (100%)`
+    `Summary: DataFlow=${hydratedStations.length} stations | TechArch=${curriculum.techArch.components.length} comps | BusinessFlow=${curriculum.businessFlow.nodes.length} nodes | Dossiers=${dossierRes.skipped ? 'legacy' : dossierRes.totalExpected} | Workbench=${hydratedWorkbench.length} views | AnnotatedLines=${checkedLines} (100%)`
   );
 }
 
@@ -369,10 +590,20 @@ function findBrowserBinary() {
     '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
     '/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge',
     '/usr/bin/google-chrome',
+    '/usr/bin/google-chrome-stable',
     '/usr/bin/chromium',
     '/usr/bin/chromium-browser',
+    '/snap/bin/chromium',
+    '/usr/bin/microsoft-edge',
   ].filter(Boolean);
   for (const p of candidates) if (fs.existsSync(p)) return p;
+  const locator = process.platform === 'win32' ? 'where' : 'which';
+  for (const cmd of ['google-chrome', 'google-chrome-stable', 'chromium', 'chromium-browser', 'msedge']) {
+    try {
+      const out = execFileSync(locator, [cmd], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim().split(/\r?\n/)[0];
+      if (out && fs.existsSync(out)) return out;
+    } catch {}
+  }
   die('Could not locate Headless Edge/Chrome binary. Set CHROME_PATH env var.');
 }
 
@@ -491,13 +722,17 @@ async function cmdVerifyHtml(opts) {
   fs.mkdirSync(shotsDir, { recursive: true });
   const port = Number(opts.port || 9345);
   const browserBin = findBrowserBinary();
-  const profileDir = path.join(path.dirname(htmlPath), `.cdp_profile_${port}`);
+  const profileDir = path.join(os.tmpdir(), `repo_mastery_cdp_profile_${port}_${process.pid}`);
   fs.rmSync(profileDir, { recursive: true, force: true });
 
-  const proc = spawn(browserBin, [
+  const browserArgs = [
     '--headless=new', '--disable-gpu', '--no-first-run', '--no-default-browser-check',
-    `--remote-debugging-port=${port}`, `--user-data-dir=${profileDir}`, '--window-size=1440,920', 'about:blank',
-  ], { stdio: 'ignore' });
+    `--remote-debugging-port=${port}`, `--user-data-dir=${profileDir}`, '--window-size=1440,920',
+  ];
+  if (process.platform === 'linux') browserArgs.push('--no-sandbox', '--disable-dev-shm-usage');
+  browserArgs.push('about:blank');
+
+  const proc = spawn(browserBin, browserArgs, { stdio: 'ignore' });
 
   let cdp;
   const issues = [];
@@ -527,38 +762,240 @@ async function cmdVerifyHtml(opts) {
       shots.push(p);
     };
 
-    // 1. Overview 3 Maps
+    // 1. Overview 3 Maps + v6 Dossier Deck / Fullscreen Modal / Anti-misclick / Topology Highlighting
+    const hasDossiers = await cdp.eval(`Boolean(DATA.overviewDossiers && DATA.overviewDossiers.dataflow && DATA.overviewDossiers.techarch && DATA.overviewDossiers.businessflow)`);
+    const stationIds = await cdp.eval(`(DATA.stations || []).map(s => s.id)`);
     const dfRes = await checkSvg('#dfBlueprintSvg', 'Map1:DataFlow');
     await saveShot('shot_01_dark_dataflow.png');
 
+    let dossierChecks = { enabled: hasDossiers, passed: 0, total: 0 };
+    const recordCheck = (ok, errMsg) => {
+      dossierChecks.total++;
+      if (ok) dossierChecks.passed++;
+      else issues.push(errMsg);
+    };
+
+    if (hasDossiers) {
+      // Check Map 1 bottom-left chips say "单击看详解" and adjacent highlighting works
+      const dfUiRes = await cdp.eval(`(() => {
+        const chips = [...document.querySelectorAll('#dfBlueprintSvg .node-src-chip')].map(el => el.textContent.trim());
+        const allChipsOk = chips.length > 0 && chips.every(c => c === '单击看详解');
+        const selSt = getStation(ui.selectedDfStationId);
+        const selDfId = selSt ? selSt.dfNodeId : null;
+        const flows = DATA.dataFlow?.flows || [];
+        const adj = new Set(selDfId ? [selDfId] : []);
+        let hasAdjEdge = false, hasUnrelEdge = false;
+        flows.forEach(fl => {
+          if (selDfId && (fl.from === selDfId || fl.to === selDfId)) {
+            hasAdjEdge = true; adj.add(fl.from); adj.add(fl.to);
+          } else {
+            hasUnrelEdge = true;
+          }
+        });
+        const hasUnrelNode = (DATA.stations || []).some(s => !adj.has(s.dfNodeId));
+        const actEdgeCnt = document.querySelectorAll('#dfBlueprintSvg .arch-edge.active').length;
+        const dimEdgeCnt = document.querySelectorAll('#dfBlueprintSvg .arch-edge.dimmed').length;
+        const dimNodeCnt = document.querySelectorAll('#dfBlueprintSvg .arch-node.dimmed').length;
+        const hlOk = (!hasAdjEdge || actEdgeCnt > 0) && (!hasUnrelEdge || dimEdgeCnt > 0) && (!hasUnrelNode || dimNodeCnt > 0);
+        return { allChipsOk, hlOk, actEdgeCnt, dimEdgeCnt, dimNodeCnt };
+      })()`);
+      recordCheck(dfUiRes.allChipsOk, 'Map1:DataFlow node-src-chip should all be "单击看详解"');
+      recordCheck(dfUiRes.hlOk, `Map1:DataFlow adjacent edge/node highlight check failed: ${JSON.stringify(dfUiRes)}`);
+
+      // Anti-misclick on Map 1 (2 single-clicks keep ui.view === 'overview' and render 5 dossier cards)
+      const dfClickRes = await cdp.eval(`(() => {
+        const sid = ${JSON.stringify(stationIds[0])};
+        const g1 = document.querySelector('#dfBlueprintSvg .arch-node[data-stid="' + sid + '"]');
+        if (!g1) return { ok: false, reason: 'node not found' };
+        g1.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+        const g2 = document.querySelector('#dfBlueprintSvg .arch-node[data-stid="' + sid + '"]');
+        g2.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+        const cards = document.querySelectorAll('#overviewDossierDeck .dos-card').length;
+        const roleRaw = (DATA.overviewDossiers.dataflow[sid]?.role || '').replace(/[\`*]/g, '').replace(/\\s+/g, ' ').trim();
+        const roleBox = (document.querySelector('#overviewDossierDeck .dos-role-box')?.textContent || '').replace(/\\s+/g, ' ').trim();
+        return { ok: ui.view === 'overview' && cards === 5 && roleBox.includes(roleRaw.slice(0, 20)), view: ui.view, cards };
+      })()`);
+      recordCheck(dfClickRes.ok, `Map1:DataFlow anti-misclick/dossier render failed: ${JSON.stringify(dfClickRes)}`);
+
+      // Neighbor chip jump (+ auto-reset filter when cross-flow if multiple flows exist)
+      const dfNbRes = await cdp.eval(`(() => {
+        const chip = document.querySelector('#overviewDossierDeck .dos-neighbor-chip[data-dos-jump-id]');
+        if (!chip) return { ok: true, skipped: true };
+        const targetId = chip.dataset.dosJumpId;
+        const targetSt = getStation(targetId);
+        const otherFlow = (DATA.flows || []).find(f => f.id !== targetSt?.flowId);
+        if (otherFlow) ui.flowFilter = otherFlow.id;
+        chip.click();
+        return { ok: ui.view === 'overview' && ui.selectedDfStationId === targetId && ui.flowFilter === 'all', selected: ui.selectedDfStationId, targetId, flowFilter: ui.flowFilter };
+      })()`);
+      recordCheck(dfNbRes.ok, `Map1:DataFlow neighbor chip jump failed: ${JSON.stringify(dfNbRes)}`);
+
+      // Prev / Next button + ArrowLeft / ArrowRight keyboard navigation
+      const dfNavRes = await cdp.eval(`(() => {
+        if ((DATA.stations || []).length <= 1) return { ok: true };
+        const startId = ui.selectedDfStationId;
+        document.querySelector('#overviewDossierDeck [data-dos-nav="next"]')?.click();
+        const afterNext = ui.selectedDfStationId;
+        document.querySelector('#overviewDossierDeck [data-dos-nav="prev"]')?.click();
+        const backPrev = ui.selectedDfStationId;
+        window.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
+        const afterKeyR = ui.selectedDfStationId;
+        window.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }));
+        const afterKeyL = ui.selectedDfStationId;
+        return { ok: afterNext !== startId && backPrev === startId && afterKeyR !== startId && afterKeyL === startId, startId, afterNext, backPrev, afterKeyR, afterKeyL };
+      })()`);
+      recordCheck(dfNavRes.ok, `Map1:DataFlow prev/next or keyboard nav failed: ${JSON.stringify(dfNavRes)}`);
+
+      // Interview Q&A single toggle + expand/collapse all (leave Q1 open for deck/modal screenshots)
+      const qaRes = await cdp.eval(`(() => {
+        const initOpen = document.querySelectorAll('#overviewDossierDeck .dos-qa-ans.open').length;
+        document.querySelector('#overviewDossierDeck [data-dos-toggle-qa="0"]')?.click();
+        const afterOne = document.querySelectorAll('#overviewDossierDeck .dos-qa-ans.open').length;
+        document.querySelector('#overviewDossierDeck [data-dos-toggle-all-qa="1"]')?.click();
+        const afterAll = document.querySelectorAll('#overviewDossierDeck .dos-qa-ans.open').length;
+        document.querySelector('#overviewDossierDeck [data-dos-toggle-all-qa="1"]')?.click();
+        const afterCollapse = document.querySelectorAll('#overviewDossierDeck .dos-qa-ans.open').length;
+        document.querySelector('#overviewDossierDeck [data-dos-toggle-qa="0"]')?.click();
+        return { ok: initOpen === 0 && afterOne === 1 && afterAll === 2 && afterCollapse === 0, initOpen, afterOne, afterAll, afterCollapse };
+      })()`);
+      recordCheck(qaRes.ok, `Map1:Dossier Q&A toggle check failed: ${JSON.stringify(qaRes)}`);
+
+      // Scroll deck into view and capture shot_02
+      await cdp.eval(`document.getElementById('overviewDossierDeck')?.scrollIntoView({ behavior: 'instant', block: 'start' })`);
+      await sleep(150);
+      await saveShot('shot_02_dark_dossier_deck.png');
+
+      // Deck collapse / expand toggle
+      const colRes = await cdp.eval(`(() => {
+        document.querySelector('#overviewDossierDeck [data-dos-toggle-collapse="1"]')?.click();
+        const collapsed = Boolean(document.querySelector('#overviewDossierDeck .dos-collapsed-bar')) && !document.querySelector('#overviewDossierDeck .dos-body');
+        document.querySelector('#overviewDossierDeck [data-dos-toggle-collapse="1"]')?.click();
+        const restored = Boolean(document.querySelector('#overviewDossierDeck .dos-body')) && !document.querySelector('#overviewDossierDeck .dos-collapsed-bar');
+        return { ok: collapsed && restored, collapsed, restored };
+      })()`);
+      recordCheck(colRes.ok, `Map1:Dossier deck collapse/expand failed: ${JSON.stringify(colRes)}`);
+
+      // Fullscreen modal open -> capture shot_03 -> Esc close
+      const modOpenOk = await cdp.eval(`(() => {
+        document.querySelector('#overviewDossierDeck [data-dos-open-modal="1"]')?.click();
+        const m = document.getElementById('dossierModal');
+        return Boolean(m && m.classList.contains('open') && document.querySelectorAll('#dossierModalBox .dos-card').length === 5);
+      })()`);
+      recordCheck(modOpenOk, 'Map1:Dossier fullscreen modal failed to open with 5 cards');
+      await sleep(180);
+      await saveShot('shot_03_dark_dossier_modal.png');
+
+      const modCloseOk = await cdp.eval(`(() => {
+        window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+        return !document.getElementById('dossierModal')?.classList.contains('open');
+      })()`);
+      recordCheck(modCloseOk, 'Map1:Dossier fullscreen modal failed to close on Escape');
+
+      // Double-click enters View 2 station
+      const dblOk = await cdp.eval(`(() => {
+        const sid = ${JSON.stringify(stationIds[0])};
+        const g = document.querySelector('#dfBlueprintSvg .arch-node[data-stid="' + sid + '"]');
+        g?.dispatchEvent(new MouseEvent('dblclick', { bubbles: true }));
+        const ok = ui.view === 'station' && progress.currentStationId === sid;
+        setView('overview');
+        return ok;
+      })()`);
+      recordCheck(dblOk, 'Map1:DataFlow double-click did not navigate to View 2 station');
+    }
+
+    // Map 2: TechArch
     await cdp.eval(`document.querySelector('.bp-tab[data-bp="techarch"]').click()`);
     await sleep(200);
     const taRes = await checkSvg('#techArchSvg', 'Map2:TechArch');
-    await saveShot('shot_02_dark_techarch.png');
+    await saveShot('shot_04_dark_techarch.png');
 
+    if (hasDossiers) {
+      const taCheck = await cdp.eval(`(() => {
+        const comps = DATA.techArch?.components || [];
+        if (!comps.length) return { ok: false, reason: 'no tech components' };
+        const cid = comps[0].id;
+        const g1 = document.querySelector('#techArchSvg .arch-node[data-comp-id="' + cid + '"]');
+        g1?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+        const g2 = document.querySelector('#techArchSvg .arch-node[data-comp-id="' + cid + '"]');
+        g2?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+        const cards = document.querySelectorAll('#overviewDossierDeck .dos-card').length;
+        const roleRaw = (DATA.overviewDossiers.techarch[cid]?.role || '').replace(/[\`*]/g, '').replace(/\\s+/g, ' ').trim();
+        const roleBox = (document.querySelector('#overviewDossierDeck .dos-role-box')?.textContent || '').replace(/\\s+/g, ' ').trim();
+        let nbOk = true;
+        const chip = document.querySelector('#overviewDossierDeck .dos-neighbor-chip[data-dos-jump-id]');
+        if (chip) {
+          const tid = chip.dataset.dosJumpId;
+          chip.click();
+          nbOk = ui.selectedTechCompId === tid && ui.view === 'overview';
+        }
+        return { ok: ui.view === 'overview' && cards === 5 && roleBox.includes(roleRaw.slice(0, 20)) && nbOk, view: ui.view, cards, nbOk };
+      })()`);
+      recordCheck(taCheck.ok, `Map2:TechArch click/dossier/neighbor check failed: ${JSON.stringify(taCheck)}`);
+
+      // Ctrl+K global search for Map 2 component by examPoints / role -> jump to Map 2 & expand dossier
+      const searchTechOk = await cdp.eval(`(() => {
+        const comps = DATA.techArch?.components || [];
+        const target = comps.find(c => c.id !== ui.selectedTechCompId) || comps[0];
+        const dos = DATA.overviewDossiers.techarch[target.id];
+        const kw = (dos?.examPoints?.[0] || target.label || '').trim();
+        document.getElementById('btnSearch')?.click();
+        const inp = document.getElementById('searchInput');
+        inp.value = kw;
+        inp.dispatchEvent(new Event('input', { bubbles: true }));
+        const item = document.querySelector('#searchResults .search-item[data-kind="tech"][data-id="' + target.id + '"]');
+        if (!item) return { ok: false, reason: 'missing tech search item for kw=' + kw };
+        item.click();
+        return {
+          ok: ui.view === 'overview' && ui.blueprintMode === 'techarch' && ui.selectedTechCompId === target.id && !ui.dossierCollapsed && Boolean(document.querySelector('#overviewDossierDeck .dos-body')),
+          view: ui.view, mode: ui.blueprintMode, selected: ui.selectedTechCompId, target: target.id
+        };
+      })()`);
+      recordCheck(searchTechOk.ok, `Ctrl+K search for Map2 TechArch component failed: ${JSON.stringify(searchTechOk)}`);
+    }
+
+    // Map 3: BusinessFlow
     await cdp.eval(`document.querySelector('.bp-tab[data-bp="businessflow"]').click()`);
     await sleep(200);
     const bfRes = await checkSvg('#businessFlowSvg', 'Map3:BusinessFlow');
-    await saveShot('shot_03_dark_businessflow.png');
+    await saveShot('shot_05_dark_businessflow.png');
 
-    // Verify all BusinessFlow nodes jump cleanly
+    // Verify all BusinessFlow nodes: single-click updates overview without accidental jump; CTA enters View 2 cleanly
     const bizIds = await cdp.eval(`(DATA.businessFlow?.nodes || []).map(n => n.id)`);
     let bizPass = 0;
-    for (const bid of bizIds) {
+    for (let bi = 0; bi < bizIds.length; bi++) {
+      const bid = bizIds[bi];
       const ok = await cdp.eval(`(() => {
         ui.blueprintMode = 'businessflow'; ui.bizFilter = 'all'; setView('overview');
-        const g = document.querySelector('#businessFlowSvg .arch-node[data-biz-id="' + ${JSON.stringify(bid)} + '"]');
+        const bid = ${JSON.stringify(bid)};
+        const g = document.querySelector('#businessFlowSvg .arch-node[data-biz-id="' + bid + '"]');
         if (!g) return false;
-        if (ui.selectedBizNodeId !== ${JSON.stringify(bid)}) g.dispatchEvent(new MouseEvent('click', {bubbles:true}));
-        document.getElementById('btnEnterBizStation').click();
+        g.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+        if (ui.view !== 'overview' || ui.selectedBizNodeId !== bid) return false;
+        // Repeated single click must NOT jump
+        const g2 = document.querySelector('#businessFlowSvg .arch-node[data-biz-id="' + bid + '"]');
+        g2?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+        if (ui.view !== 'overview') return false;
+        const hasDos = Boolean(DATA.overviewDossiers?.businessflow?.[bid]);
+        if (hasDos) {
+          const cards = document.querySelectorAll('#overviewDossierDeck .dos-card').length;
+          const roleRaw = (DATA.overviewDossiers.businessflow[bid]?.role || '').replace(/[\`*]/g, '').replace(/\\s+/g, ' ').trim();
+          const roleBox = (document.querySelector('#overviewDossierDeck .dos-role-box')?.textContent || '').replace(/\\s+/g, ' ').trim();
+          if (cards !== 5 || !roleBox.includes(roleRaw.slice(0, 20))) return false;
+          const cta = document.querySelector('#overviewDossierDeck [data-dos-go-st]');
+          if (!cta) return false;
+          cta.click();
+        } else {
+          const cta = document.getElementById('btnEnterBizStation');
+          if (!cta) return false;
+          cta.click();
+        }
         return ui.view === 'station';
       })()`);
       if (ok) bizPass++;
-      else issues.push(`BusinessFlow node ${bid} jump failed`);
+      else issues.push(`BusinessFlow node ${bid} anti-misclick/CTA jump failed`);
     }
 
     // 2. Verify ALL Stations (WhyBlock + I/O Contract + 100% per-line Chinese notes + Micro-Flow SVG)
-    const stationIds = await cdp.eval(`(DATA.stations || []).map(s => s.id)`);
     let stationPass = 0;
     for (let idx = 0; idx < stationIds.length; idx++) {
       const sid = stationIds[idx];
@@ -580,10 +1017,10 @@ async function cmdVerifyHtml(opts) {
       else issues.push(`Station ${sid} audit failed: ${JSON.stringify(audit)}`);
 
       if (idx === 0) {
-        await saveShot('shot_04_dark_station_top.png');
+        await saveShot('shot_06_dark_station_top.png');
         await cdp.eval(`document.getElementById('stIoPanel').scrollIntoView({ behavior: 'instant', block: 'start' })`);
         await sleep(100);
-        await saveShot('shot_05_dark_station_io.png');
+        await saveShot('shot_07_dark_station_io.png');
       }
     }
 
@@ -609,14 +1046,25 @@ async function cmdVerifyHtml(opts) {
       }
     }
 
-    // 4. Light mode screenshot
-    await cdp.eval(`openStation(${JSON.stringify(stationIds[0])}); document.getElementById('btnTheme').click();`);
+    // 4. Light mode screenshots (View 1 dossier modal + View 2 station)
+    await cdp.eval(`document.getElementById('btnTheme').click(); ui.blueprintMode = 'dataflow'; setView('overview');`);
+    await sleep(150);
+    if (hasDossiers) {
+      await cdp.eval(`openDossierModal()`);
+      await sleep(180);
+      await saveShot('shot_08_light_dossier_modal.png');
+      await cdp.eval(`closeDossierModal()`);
+    } else {
+      await saveShot('shot_08_light_overview.png');
+    }
+    await cdp.eval(`openStation(${JSON.stringify(stationIds[0])})`);
     await sleep(220);
-    await saveShot('shot_06_light_station.png');
+    await saveShot('shot_09_light_station.png');
 
     const report = {
       htmlPath,
       mapCounts: { dataflow: dfRes.nodeCount, techarch: taRes.nodeCount, businessflow: bfRes.nodeCount },
+      dossierChecks: hasDossiers ? `${dossierChecks.passed}/${dossierChecks.total}` : 'legacy',
       businessJumps: `${bizPass}/${bizIds.length}`,
       stationsAudited: `${stationPass}/${stationIds.length}`,
       workbenchViews: wbCount,
@@ -632,7 +1080,7 @@ async function cmdVerifyHtml(opts) {
       fs.writeFileSync(outPath, JSON.stringify(report, null, 2), 'utf8');
     }
 
-    console.log(`CDP Verify complete: ConsoleErrors=${cdp.consoleErrors.length} Issues=${issues.length} Stations=${stationPass}/${stationIds.length} BizJumps=${bizPass}/${bizIds.length} Shots=${shots.length}`);
+    console.log(`CDP Verify complete: ConsoleErrors=${cdp.consoleErrors.length} Issues=${issues.length} Dossiers=${report.dossierChecks} Stations=${stationPass}/${stationIds.length} BizJumps=${bizPass}/${bizIds.length} Shots=${shots.length}`);
     if (cdp.consoleErrors.length > 0 || issues.length > 0) {
       cdp.consoleErrors.forEach((e) => console.error('  ERR:', e));
       issues.forEach((x) => console.error('  ISSUE:', x));
@@ -642,7 +1090,7 @@ async function cmdVerifyHtml(opts) {
     if (cdp) cdp.close();
     try { proc.kill(); } catch {}
     await sleep(300);
-    fs.rmSync(profileDir, { recursive: true, force: true });
+    try { fs.rmSync(profileDir, { recursive: true, force: true }); } catch {}
   }
 }
 
@@ -653,9 +1101,10 @@ const { cmd, opts } = parseArgs(process.argv);
 if (cmd === 'scan') cmdScan(opts);
 else if (cmd === 'prepare-notes') cmdPrepareNotes(opts);
 else if (cmd === 'verify-notes') cmdVerifyNotes(opts);
+else if (cmd === 'verify-dossiers') cmdVerifyDossiers(opts);
 else if (cmd === 'build') cmdBuild(opts);
 else if (cmd === 'verify-html') await cmdVerifyHtml(opts);
 else {
-  console.error('Usage: node repo_mastery_cli.mjs <scan|prepare-notes|verify-notes|build|verify-html> [--options]');
+  console.error('Usage: node repo_mastery_cli.mjs <scan|prepare-notes|verify-notes|verify-dossiers|build|verify-html> [--options]');
   process.exit(1);
 }
